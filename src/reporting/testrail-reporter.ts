@@ -17,39 +17,37 @@ const {
 } = process.env;
 
 const jenkinsBaseUrl = JENKINS_BASE_URL || 'http://localhost:9090';
-const reportPath = path.join(process.cwd(), 'reports', 'report.json');
+const reportPath = path.join(process.cwd(), 'playwright-report', 'results.json');
 
 interface StepResult {
     status: string;
     error_message?: string;
 }
 
-interface Step {
-    result: StepResult;
+interface Test {
+    title: string[];
+    outcome: { verdict: string };
+    duration: number;
+    error?: string;
 }
 
-interface Tag {
-    name: string;
+interface Suite {
+    specs: {
+        tests: Test[];
+    }[];
 }
 
-interface ScenarioElement {
-    name: string;
-    tags: Tag[];
-    steps: Step[];
+interface PlaywrightReport {
+    suites: Suite[];
 }
 
-interface CucumberJsonFeature {
-    name: string;
-    elements: ScenarioElement[];
-}
+const reportData: PlaywrightReport = JSON.parse(fs.readFileSync(reportPath, 'utf-8'));
 
-const reportData: CucumberJsonFeature[] = JSON.parse(fs.readFileSync(reportPath, 'utf-8'));
-
-function getLatestScreenshotForScenario(scenarioName: string): string | null {
+function getLatestScreenshotForTitle(title: string): string | null {
     const folder = path.join(process.cwd(), 'screenshots');
     if (!fs.existsSync(folder)) return null;
 
-    const baseName = scenarioName.replace(/\s+/g, '_').toLowerCase();
+    const baseName = title.replace(/\s+/g, '_').toLowerCase();
 
     const files = fs
         .readdirSync(folder)
@@ -112,12 +110,12 @@ async function addResultForCase(
     );
 }
 
-async function getScreenshotURL(scenarioName: string, screenshotName: string): Promise<string> {
+async function getScreenshotURL(testTitle: string, screenshotName: string): Promise<string> {
     const screenshotPath = path.join(process.cwd(), 'screenshots', screenshotName);
     const runningInJenkins = !!JENKINS_BASE_URL;
 
     if (runningInJenkins && BUILD_NUMBER) {
-        return `${jenkinsBaseUrl}/job/playwright-demo-framework-bdd/${BUILD_NUMBER}/artifact/screenshots/${screenshotName}`;
+        return `${jenkinsBaseUrl}/job/playwright-demo-framework/${BUILD_NUMBER}/artifact/screenshots/${screenshotName}`;
     } else {
         const publicLink = await uploadToImgBB(screenshotPath);
         return publicLink && publicLink !== 'Screenshot upload failed'
@@ -129,39 +127,35 @@ async function getScreenshotURL(scenarioName: string, screenshotName: string): P
 (async () => {
     const runName = `Automated Run - ${new Date().toLocaleString()}`;
     const runId = await createTestRun(runName);
-
     let hasFailures = false;
 
-    for (const feature of reportData) {
-        console.log(`Feature: ${feature.name}`);
+    for (const suite of reportData.suites) {
+        for (const spec of suite.specs) {
+            for (const test of spec.tests) {
+                const title = test.title.join(' > ');
+                const caseIdMatch = title.match(/@C(\d+)/);
+                if (!caseIdMatch) continue;
 
-        for (const element of feature.elements) {
-            const scenarioName = element.name;
-            const tags = element.tags.map((t) => t.name);
-            const caseTag = tags.find((t) => /^@C\d+/.test(t));
-            if (!caseTag) continue;
+                const caseId = parseInt(caseIdMatch[1], 10);
+                const passed = test.outcome.verdict === 'expected';
+                const status = passed ? 1 : 5;
+                const statusText = passed ? 'PASSED' : 'FAILED';
+                if (!passed) hasFailures = true;
 
-            const caseId = parseInt(caseTag.replace('@C', ''), 10);
-            const passed = element.steps.every((s) => s.result.status === 'passed');
-            const status = passed ? 1 : 5;
-            const statusText = passed ? 'PASSED' : 'FAILED';
-            if (!passed) hasFailures = true;
+                let comment = `Automated result for: ${title}`;
+                if (!passed && test.error) {
+                    comment += `\n\n❌ Error:\n${test.error}`;
+                }
 
-            let comment = `Automated result for: ${scenarioName}`;
+                const screenshotName = getLatestScreenshotForTitle(title);
+                if (screenshotName) {
+                    const url = await getScreenshotURL(title, screenshotName);
+                    comment += `\n\n🖼️ Screenshot: ${url}`;
+                }
 
-            const failedStep = element.steps.find((s) => s.result.status === 'failed');
-            if (failedStep?.result?.error_message) {
-                comment += `\n\n❌ Error:\n${failedStep.result.error_message}`;
+                console.log(`    Test: ${title} → ${statusText}`);
+                await addResultForCase(runId, caseId, status, comment);
             }
-
-            const screenshotName = getLatestScreenshotForScenario(scenarioName);
-            if (screenshotName) {
-                const url = await getScreenshotURL(scenarioName, screenshotName);
-                comment += `\n\n🖼️ Screenshot: ${url}`;
-            }
-
-            console.log(`    Scenario: ${scenarioName} → ${statusText}`);
-            await addResultForCase(runId, caseId, status, comment);
         }
     }
 
