@@ -17,7 +17,13 @@ const {
 } = process.env;
 
 const jenkinsBaseUrl = JENKINS_BASE_URL || 'http://localhost:9090';
-const reportPath = path.join(process.cwd(), 'playwright-report', 'results.json');
+
+const reportPath = path.join(process.cwd(), 'reports', 'report.json');
+
+if (!fs.existsSync(reportPath)) {
+    console.error(`❌ Report file not found at: ${reportPath}`);
+    process.exit(1);
+}
 
 interface StepResult {
     status: string;
