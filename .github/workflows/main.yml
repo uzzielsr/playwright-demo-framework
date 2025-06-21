@@ -20,14 +20,8 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install
 
-      - name: 🧩 Install browser dependencies
-        run: npx playwright install-deps
-
       - name: 🎭 Install Playwright browsers
         run: npx playwright install --with-deps
-
-      - name: 🧱 Compile TypeScript
-        run: npx tsc
 
       - name: 🛠️ Create .env file
         run: |
