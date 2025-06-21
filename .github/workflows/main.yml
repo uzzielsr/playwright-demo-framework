@@ -1,0 +1,51 @@
+name: test
+
+on:
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🎭 Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: 🛠️ Create .env file
+        run: |
+          echo "TESTRAIL_HOST=${{ secrets.TESTRAIL_HOST }}" >> .env
+          echo "TESTRAIL_USER=${{ secrets.TESTRAIL_USER }}" >> .env
+          echo "TESTRAIL_API_KEY=${{ secrets.TESTRAIL_API_KEY }}" >> .env
+          echo "TESTRAIL_PROJECT_ID=${{ secrets.TESTRAIL_PROJECT_ID }}" >> .env
+          echo "TESTRAIL_SUITE_ID=${{ secrets.TESTRAIL_SUITE_ID }}" >> .env
+          echo "IMGBB_API_KEY=${{ secrets.IMGBB_API_KEY }}" >> .env
+
+          echo "BASE_URL=${{ secrets.BASE_URL }}" >> .env
+          echo "TEST_EMAIL=${{ secrets.TEST_EMAIL }}" >> .env
+          echo "TEST_PASSWORD=${{ secrets.TEST_PASSWORD }}" >> .env
+          echo "INVALID_EMAIL=${{ secrets.INVALID_EMAIL }}" >> .env
+          echo "INVALID_PASSWORD=${{ secrets.INVALID_PASSWORD }}" >> .env
+
+          echo "JENKINS_BASE_URL=${{ secrets.JENKINS_BASE_URL }}" >> .env
+
+      - name: 🧪 Run tests and report to TestRail
+        run: npm run test:with-report
+
+      - name: 📸 Upload screenshots as artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots/
