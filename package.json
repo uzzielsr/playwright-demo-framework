@@ -1,23 +1,29 @@
 {
   "name": "playwright-demo-framework",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {},
+  "type": "commonjs",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.53.1",
+    "@types/node": "^24.0.3",
+    "typescript": "^5.4.5",
+    "dotenv": "^16.5.0",
+    "@faker-js/faker": "^8.3.1",
+    "axios": "^1.10.0"
+  },
+  "dependencies": {
+    "form-data": "^4.0.3"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/uzzielsr/playwright-demo-framework.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/uzzielsr/playwright-demo-framework/issues"
   },
-  "homepage": "https://github.com/uzzielsr/playwright-demo-framework#readme",
-  "devDependencies": {
-    "@playwright/test": "^1.53.1",
-    "@types/node": "^24.0.3"
-  }
+  "homepage": "https://github.com/uzzielsr/playwright-demo-framework#readme"
 }
