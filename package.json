@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "type": "commonjs",
   "scripts": {
+    "pretest": "mkdir -p reports",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report",
-    "report:testrail": "ts-node src/reporting/report-testrail.ts",
+    "test:with-report": "npm test && npm run report:testrail",
+    "test:headed:with-report": "npm run test:headed && npm run report:testrail",
+    "report:testrail": "ts-node src/reporting/testrail-reporter.ts",
     "serve:screenshots": "ts-node src/reporting/serve-screenshots.ts",
     "install:browsers": "npx playwright install --with-deps"
   },
