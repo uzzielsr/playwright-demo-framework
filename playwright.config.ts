@@ -25,7 +25,7 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['list'],
-    ['json', { outputFile: path.join(__dirname, 'reports', 'report.json') }],
+    ['@zealteam/testrail-reporter'],
     ['html', { outputFolder: 'playwright-report', open: 'never' }]
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -36,8 +36,8 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
     headless: true,
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    screenshot: 'on',
+    video: 'on',
   },
 
   /* Configure projects for major browsers */

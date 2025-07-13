@@ -4,7 +4,7 @@ Enterprise-grade end-to-end automation framework using **Playwright + TypeScript
 
 ---
 
-## Tech Stack 
+## Tech Stack
 
 - Playwright
 - TypeScript
@@ -23,7 +23,7 @@ Enterprise-grade end-to-end automation framework using **Playwright + TypeScript
 
 Magento Demo E-commerce site:
 
-https://magento.softwaretestingboard.com/
+<https://magento.softwaretestingboard.com/>
 
 ---
 
@@ -72,7 +72,7 @@ git clone https://github.com/<your-github-username>/playwright-demo-framework-bd
 cd playwright-demo-framework-bdd
 ```
 
-### Install Project Dependencies 
+### Install Project Dependencies
 
 ```bash
 npm install
@@ -88,13 +88,13 @@ npm run install:browsers
 
 ## How to Run the Tests
 
-### Run all scenarios:
+### Run all scenarios
 
 ```bash
 npm test
 ```
 
-### Run specific scenario by tag:
+### Run specific scenario by tag
 
 ```bash
 npm test -- --tags "@successful"
@@ -114,6 +114,7 @@ browser = await chromium.launch({ headless: true });
 ### Run with Visual Debugging + Specific Tags
 
 To run a specific tag with the browser visible:
+
 ```bash
 npx playwright test --headed --project=chromium -- --tags "@tagname"
 ```
@@ -127,44 +128,50 @@ Choose the appropriate command based on your testing and reporting needs.
 ```bash
 npm test
 ```
+
 ✅ Runs all tests in **headless mode** and outputs a simple result summary to the terminal.  
 ❌ Does not upload results or screenshots.
 
 ```bash
 npm run test:with-report
 ```
+
 ✅ Runs all tests headlessly, then **automatically uploads results** to TestRail and screenshots to ImgBB (if configured).  
 🟢 Best for CI pipelines or automated reporting environments.
 
 ```bash
 npm run test:headed:with-report
 ```
+
 ✅ Runs all tests in **headed mode** (visible browser), with TestRail + ImgBB integration.  
 🛠️ Ideal for debugging failing scenarios while still reporting the results.
 
 ## Output Artifacts
 
-### Screenshots:
+### Screenshots
 
 - Saved to: `/screenshots/`
 
 ### Selectors as Constants
+
 All page selectors are defined in files under:
-```
+
+```bash
 src/constants/selectors/
 ```
 
 Example:  
+
 - `login.selectors.ts`: Contains locators for login page
 - `dashboard.selectors.ts`: Contains locators for post-login area
 
 This improves test maintainability by avoiding hardcoded selectors.
 
-### Traces (only for failed scenarios):
+### Traces (only for failed scenarios)
 
 - Saved to: `/traces/`
 
-### View traces:
+### View traces
 
 ```bash
 npx playwright show-trace traces/<scenario-name>.zip
@@ -193,7 +200,7 @@ npx playwright show-trace traces/<scenario-name>.zip
 
 Create a `.env` file at the root of the project with the following variables:
 
-```
+```bash
 TESTRAIL_HOST=https://<your-subdomain>.testrail.io
 TESTRAIL_USER=your-email@example.com
 TESTRAIL_API_KEY=your-api-key
@@ -207,17 +214,21 @@ This file is included in `.gitignore` for security.
 ### 4. 💡 Tips & Tricks
 
 - You can manually test your ImgBB key using `curl`:
+
   ```bash
   curl -F "image=@screenshot.png" -F "key=YOUR_KEY" https://api.imgbb.com/1/upload
   ```
+
 - If you don’t add the `IMGBB_API_KEY`, the framework will still work, but the TestRail comments will show a local fallback link instead of a public image.
 - Use `npm run test:with-report` to run the tests and automatically upload the results to TestRail.
 
 ### 5. 🌐 Base URL & Credentials Setup
+
 To allow flexible configuration and testing across environments, the login page dynamically loads values from `.env`.
 
 Add these variables to your `.env` file:
-```
+
+```bash
 BASE_URL=https://magento.softwaretestingboard.com/
 TEST_EMAIL=your-valid-email@example.com
 TEST_PASSWORD=your-valid-password
@@ -235,7 +246,7 @@ These will be used automatically during tests for valid and invalid login scenar
 
 Create a `.env` file at the root with the following:
 
-```
+```bash
 TESTRAIL_HOST=https://<your-subdomain>.testrail.io
 TESTRAIL_USER=your-email@example.com
 TESTRAIL_API_KEY=your-api-key
@@ -252,20 +263,20 @@ Make sure these are installed:
 npm install dotenv ts-node axios
 ```
 
-### 🧪 Run your Cucumber tests to generate the report:
+### 🧪 Run your Cucumber tests to generate the report
 
 ```bash
 npm test
 ```
 
-### 🏷️ Tag each scenario with its corresponding TestRail Case ID:
+### 🏷️ Tag each scenario with its corresponding TestRail Case ID
 
 ```gherkin
 @C2331
 Scenario: Successful login
 ```
 
-### ☁️ Upload results to TestRail:
+### ☁️ Upload results to TestRail
 
 ```bash
 npx ts-node src/reporting/testrail-reporter.ts
@@ -281,7 +292,7 @@ After each test run, the framework automatically uploads screenshots to [ImgBB](
 
 Make sure to add your `IMGBB_API_KEY` to the `.env` file to enable this feature.
 
-### 🧵 One-liner command:
+### 🧵 One-liner command
 
 ```bash
 npm test && npx ts-node src/reporting/testrail-reporter.ts
@@ -291,14 +302,16 @@ npm test && npx ts-node src/reporting/testrail-reporter.ts
 
 ### 🛠 Jenkins Integration (Optional)
 
-You can run your tests automatically in Jenkins using a freestyle or pipeline job. 
+You can run your tests automatically in Jenkins using a freestyle or pipeline job.
 
-#### Prerequisites:
+#### Prerequisites
+
 - Jenkins installed and accessible
 - Git and Node.js installed on the Jenkins agent
 - Environment variables configured in Jenkins or passed from a `.env` file
 
-#### Example Steps for Jenkins Pipeline:
+#### Example Steps for Jenkins Pipeline
+
 ```groovy
 pipeline {
   agent any
@@ -331,13 +344,13 @@ pipeline {
 }
 ```
 
-> ✅ Jenkins automatically stores screenshots as artifacts under `/screenshots`. Public visibility requires Jenkins to be accessible via internet or VPN.
+✅ Jenkins automatically stores screenshots as artifacts under `/screenshots`. Public visibility requires Jenkins to be accessible via internet or VPN.
 
-> 🖼️ For guaranteed screenshot visibility in TestRail, ImgBB is preferred.
+🖼️ For guaranteed screenshot visibility in TestRail, ImgBB is preferred.
 
 🔁 **If you're not using ImgBB**, ensure Jenkins is publicly accessible (e.g., via a custom domain, VPN, or [ngrok](https://ngrok.com)) to allow TestRail to render screenshot links properly.
 
-> 💡 **Note:** Jenkins screenshots are only visible in TestRail if Jenkins is reachable from the public web. Otherwise, prefer using ImgBB for reliable public URLs.
+💡 **Note:** Jenkins screenshots are only visible in TestRail if Jenkins is reachable from the public web. Otherwise, prefer using ImgBB for reliable public URLs.
 
 ---
 

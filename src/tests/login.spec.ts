@@ -3,7 +3,7 @@ import { LoginPage } from '../pages/login.page';
 
 test.describe('Login functionality', () => {
   
-  test('Successful login', async ({ page }) => {
+  test('@C2333 Successful login', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.navigate();
     await loginPage.loginWithValidCredentials();
@@ -11,7 +11,7 @@ test.describe('Login functionality', () => {
     expect(isLoggedIn).toBeTruthy();
   });
 
-  test('Login with invalid password', async ({ page }) => {
+  test('@C2334 Login with invalid password', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.navigate();
     await loginPage.loginWithInvalidCredentials();
