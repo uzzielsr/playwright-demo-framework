@@ -40,7 +40,6 @@ jobs:
           echo "TEST_PASSWORD=${{ secrets.TEST_PASSWORD }}" >> .env
           echo "INVALID_EMAIL=${{ secrets.INVALID_EMAIL }}" >> .env
           echo "INVALID_PASSWORD=${{ secrets.INVALID_PASSWORD }}" >> .env
-          echo "JENKINS_BASE_URL=${{ secrets.JENKINS_BASE_URL }}" >> .env
 
       - name: 🧪 Run tests and report to TestRail
         run: npm run test:with-report
