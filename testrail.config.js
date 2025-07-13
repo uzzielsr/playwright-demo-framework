@@ -14,7 +14,7 @@ module.exports = {
   },
   create_new_run: {
     include_all: false,
-    run_name: "Test Run",
+    run_name:`Automated Run - ${new Date().toLocaleString()}`,
     milestone_id: 0,
   },
   status: {
