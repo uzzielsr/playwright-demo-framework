@@ -45,12 +45,12 @@ jobs:
       - name: 🧪 Run tests and report to TestRail
         run: npm run test:with-report
 
-      - name: 📸 Upload screenshots as artifacts
+      - name: 📸 Upload test-results (screenshots/videos)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: screenshots
-          path: screenshots/
+          name: test-results
+          path: test-results/
 
       - name: 📂 Upload Playwright HTML report
         if: always()
