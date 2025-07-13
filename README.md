@@ -114,7 +114,6 @@ TEST_EMAIL=
 TEST_PASSWORD=
 INVALID_EMAIL=
 INVALID_PASSWORD=
-JENKINS_BASE_URL=
 ```
 
 These are automatically set in CI via GitHub secrets.
