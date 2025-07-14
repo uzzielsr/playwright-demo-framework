@@ -215,6 +215,10 @@ TESTRAIL_PASSWORD=
 TESTRAIL_PROJECT_ID=
 TESTRAIL_SUITE_ID=
 
+TESTMO_URL=
+TESTMO_TOKEN=
+TESTMO_PROJECT_ID=
+
 BASE_URL=
 TEST_EMAIL=
 TEST_PASSWORD=
@@ -236,6 +240,73 @@ These are automatically set in CI via GitHub secrets.
 
 ---
 
+## Testmo Integration
+
+This project also supports reporting test results to **Testmo**, a modern test management platform.
+
+### ✅ Requirements
+
+- A Testmo account and an active project
+- The official CLI reporter: `@testmo/testmo-cli`
+- Set the following environment variables (locally or in CI):
+
+```env
+TESTMO_URL=https://your-team.testmo.net
+TESTMO_TOKEN=your_testmo_api_token
+TESTMO_PROJECT_ID=your_testmo_project_id
+```
+
+> 🔐 Never commit these credentials to source control. Use `.env` for local development and GitHub Secrets in CI.
+
+---
+
+### 🧪 How to Tag Tests for Testmo
+
+To link Playwright tests with Testmo case IDs, tag your tests using the `@C<id>` annotation, for example:
+
+```ts
+test('@C1234 Login works with valid credentials', async ({ page }) => {
+  // your test logic here
+});
+```
+
+---
+
+### 🚀 How to Run with Testmo Reporting
+
+Run the tests and automatically submit results to Testmo using the script:
+
+```bash
+npm run test:with-report
+```
+
+This will:
+
+- Run all Playwright tests
+- Collect results via JUnit XML
+- Submit results to Testmo via the CLI
+- Upload screenshots and videos as attachments
+
+Make sure your `test:with-report` script in `package.json` looks like this:
+
+```json
+"test:with-report": "playwright test; dotenv -- npx testmo automation:run:submit --instance $TESTMO_URL --project-id $TESTMO_PROJECT_ID --name 'Playwright Run' --source playwright --results test-results/results.xml"
+```
+
+---
+
+### 🛠️ Debugging Testmo Integration
+
+Use the `--debug` flag with the `testmo` CLI to see verbose logs:
+
+```bash
+npx testmo automation:run:submit --debug ...
+```
+
+You can also inspect the generated results file (`test-results/results.xml`) to ensure your test case annotations (`@C1234`) are being captured correctly.
+
+---
+
 ## CI/CD with GitHub Actions
 
 - The main workflow (`.github/workflows/main.yml`) installs dependencies, browsers, sets environment variables, runs tests, and uploads artifacts on every pull request and daily at 11:00 UTC.
@@ -252,6 +323,10 @@ These are automatically set in CI via GitHub secrets.
    - `TESTRAIL_PASSWORD`
    - `TESTRAIL_PROJECT_ID`
    - `TESTRAIL_SUITE_ID`
+
+   - `TESTMO_URL`
+   - `TESTMO_TOKEN`
+   - `TESTMO_PROJECT_ID`
 
    - `BASE_URL`
    - `TEST_EMAIL`
@@ -288,6 +363,10 @@ export TESTRAIL_USER="$TESTRAIL_USER"
 export TESTRAIL_PASSWORD="$TESTRAIL_PASSWORD"
 export TESTRAIL_PROJECT_ID="$TESTRAIL_PROJECT_ID"
 export TESTRAIL_SUITE_ID="$TESTRAIL_SUITE_ID"
+
+export TESTMO_URL="$TESTMO_URL"
+export TESTMO_TOKEN="$TESTMO_TOKEN"
+export TESTMO_PROJECT_ID="$TESTMO_PROJECT_ID"
 
 export BASE_URL="$BASE_URL"
 export TEST_EMAIL="$TEST_EMAIL"
