@@ -141,3 +141,87 @@ Contributions are welcome! Please open an issue or pull request for suggestions 
 ---
 
 Updated to reflect the current state of the project and its integration with Playwright, TestRail, and GitHub Actions.
+
+---
+
+## 🔧 Jenkins CI/CD Setup with GitHub Webhook + Ngrok + TestRail Integration
+
+This project also supports executing tests through Jenkins using GitHub webhooks and optional ngrok tunneling for local development.
+
+### 🖥️ 1. Jenkins Build Script
+
+Inside Jenkins → your project → **Configure** → **Build** → **Execute Shell**, add the following script (with your real credentials set as Jenkins environment variables or injected via secrets):
+
+```bash
+#!/bin/bash
+
+# ✅ Load NVM and use correct Node version
+export NVM_DIR="$HOME/.nvm"
+source "$NVM_DIR/nvm.sh"
+nvm use 22
+
+# ✅ TestRail + Jenkins config (inject via Jenkins credentials or environment)
+export TESTRAIL_HOST="$TESTRAIL_HOST"
+export TESTRAIL_USER="$TESTRAIL_USER"
+export TESTRAIL_PASSWORD="$TESTRAIL_PASSWORD"
+export TESTRAIL_PROJECT_ID="$TESTRAIL_PROJECT_ID"
+export TESTRAIL_SUITE_ID="$TESTRAIL_SUITE_ID"
+
+export BASE_URL="$BASE_URL"
+export TEST_EMAIL="$TEST_EMAIL"
+export TEST_PASSWORD="$TEST_PASSWORD"
+export INVALID_EMAIL="$INVALID_EMAIL"
+export INVALID_PASSWORD="$INVALID_PASSWORD"
+
+# ✅ Clean & install
+rm -rf node_modules
+npm install
+npm run install:browsers
+
+# ✅ Run tests with TestRail reporter
+npm run test:with-report
+```
+
+> 🔐 Do not hardcode credentials. Use Jenkins credentials plugin or environment injection.
+
+---
+
+### 🌐 2. Ngrok Tunnel (Optional for Local Jenkins)
+
+If Jenkins is running locally (e.g., `http://localhost:9090`), use [ngrok](https://ngrok.com/) to expose it:
+
+```bash
+ngrok http 9090
+```
+
+Use the generated HTTPS forwarding URL as your webhook target in GitHub.
+
+---
+
+### 🔔 3. GitHub Webhook Setup
+
+1. Go to **Settings → Webhooks → Add Webhook** in your GitHub repo.
+2. Use the following settings:
+   - **Payload URL**: `https://<ngrok-forwarding-url>/github-webhook/`
+   - **Content type**: `application/json`
+   - **Event**: Just the `push` event (or customize)
+3. Ensure Jenkins is listening to GitHub events via:
+   - **Build Triggers** → Check `GitHub hook trigger for GITScm polling`
+
+---
+
+### 📦 4. Jenkins Artifacts (Optional)
+
+To archive test results (screenshots, videos, and reports):
+
+1. In Jenkins → Project → **Configure** → **Post-build Actions**
+2. Add **"Archive the artifacts"**
+3. Set path:
+
+```bash
+test-results/screenshots/**,test-results/videos/**,playwright-report/**
+```
+
+---
+
+This configuration enables full integration between GitHub, Jenkins, TestRail, and Playwright.
