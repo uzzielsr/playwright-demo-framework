@@ -219,7 +219,7 @@ To archive test results (screenshots, videos, and reports):
 3. Set path:
 
 ```bash
-test-results/screenshots/**,test-results/videos/**,playwright-report/**
+test-results/**/*.*
 ```
 
 ---
