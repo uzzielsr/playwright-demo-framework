@@ -7,8 +7,8 @@
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report",
-    "test:with-report": "playwright test && dotenv -- npx testmo automation:run:submit --instance $TESTMO_URL --project-id $TESTMO_PROJECT_ID --name \"Playwright Run\" --source playwright --results test-results/results.xml",
-    "test:headed:with-report": "playwright test --headed && dotenv -- npx testmo automation:run:submit --instance $TESTMO_URL --project-id $TESTMO_PROJECT_ID --name \"Playwright Headed Run\" --source playwright --results test-results/results.xml",
+    "test:with-report": "playwright test; dotenv -- npx testmo automation:run:submit --instance $TESTMO_URL --project-id $TESTMO_PROJECT_ID --name \"Playwright Run\" --source playwright --results test-results/results.xml --verbose",
+    "test:headed:with-report": "playwright test --headed; dotenv -- npx testmo automation:run:submit --instance $TESTMO_URL --project-id $TESTMO_PROJECT_ID --name \"Playwright Headed Run\" --source playwright --results test-results/results.xml --verbose",
     "install:browsers": "npx playwright install --with-deps"
   },
   "devDependencies": {
