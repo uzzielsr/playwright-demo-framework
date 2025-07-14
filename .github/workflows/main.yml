@@ -20,9 +20,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: "npm"
 
       - name: 📦 Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: 🎭 Install Playwright browsers
         run: npx playwright install --with-deps
@@ -45,8 +46,33 @@ jobs:
           echo "INVALID_EMAIL=${{ secrets.INVALID_EMAIL }}" >> .env
           echo "INVALID_PASSWORD=${{ secrets.INVALID_PASSWORD }}" >> .env
 
-      - name: 🧪 Run tests and report to TestRail
+      - name: 🔍 Debug environment variables and .env file
+        run: |
+          echo "Contents of .env file:"
+          cat .env
+          echo "TESTMO_URL: $TESTMO_URL"
+          echo "TESTMO_TOKEN: $TESTMO_TOKEN"
+          echo "TESTMO_PROJECT_ID: $TESTMO_PROJECT_ID"
+          env | grep TESTMO
+
+      - name: 🧪 Run tests and report to TestRail and Testmo
         run: npm run test:with-report
+        env:
+          TESTRAIL_HOST: ${{ secrets.TESTRAIL_HOST }}
+          TESTRAIL_USER: ${{ secrets.TESTRAIL_USER }}
+          TESTRAIL_PASSWORD: ${{ secrets.TESTRAIL_PASSWORD }}
+          TESTRAIL_PROJECT_ID: ${{ secrets.TESTRAIL_PROJECT_ID }}
+          TESTRAIL_SUITE_ID: ${{ secrets.TESTRAIL_SUITE_ID }}
+
+          TESTMO_URL: ${{ secrets.TESTMO_URL }}
+          TESTMO_TOKEN: ${{ secrets.TESTMO_TOKEN }}
+          TESTMO_PROJECT_ID: ${{ secrets.TESTMO_PROJECT_ID }}
+
+          BASE_URL: ${{ secrets.BASE_URL }}
+          TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
+          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+          INVALID_EMAIL: ${{ secrets.INVALID_EMAIL }}
+          INVALID_PASSWORD: ${{ secrets.INVALID_PASSWORD }}
 
       - name: 📸 Upload test-results (screenshots/videos)
         if: always()
