@@ -3,21 +3,23 @@
   "version": "1.0.0",
   "type": "commonjs",
   "scripts": {
-    "pretest": "mkdir -p reports",
+    "pretest": "mkdir -p reports test-results",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report",
-    "test:with-report": "playwright test",
-    "test:headed:with-report": "playwright test --headed",
+    "test:with-report": "playwright test; dotenv -- npx testmo automation:run:submit --instance $TESTMO_URL --project-id $TESTMO_PROJECT_ID --name \"Playwright Run\" --source playwright --results test-results/results.xml",
+    "test:headed:with-report": "playwright test --headed; dotenv -- npx testmo automation:run:submit --instance $TESTMO_URL --project-id $TESTMO_PROJECT_ID --name \"Playwright Headed Run\" --source playwright --results test-results/results.xml",
     "install:browsers": "npx playwright install --with-deps"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.8.0",
     "@playwright/test": "^1.53.1",
+    "@testmo/testmo-cli": "^1.4.4",
     "@types/node": "^24.0.3",
     "@zealteam/testrail-reporter": "^1.0.17",
     "chalk": "^5.3.0",
     "dotenv": "^16.5.0",
+    "dotenv-cli": "^8.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
   },

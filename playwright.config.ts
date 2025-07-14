@@ -26,6 +26,7 @@ export default defineConfig({
   reporter: [
     ['list'],
     ['@zealteam/testrail-reporter'],
+    ['junit', { outputFile: 'test-results/results.xml' }],
     ['html', { outputFolder: 'playwright-report', open: 'never' }]
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
