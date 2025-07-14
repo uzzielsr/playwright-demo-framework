@@ -35,45 +35,39 @@ jobs:
           echo "TESTRAIL_PASSWORD=${{ secrets.TESTRAIL_PASSWORD }}" >> .env
           echo "TESTRAIL_PROJECT_ID=${{ secrets.TESTRAIL_PROJECT_ID }}" >> .env
           echo "TESTRAIL_SUITE_ID=${{ secrets.TESTRAIL_SUITE_ID }}" >> .env
-
           echo "TESTMO_URL=${{ secrets.TESTMO_URL }}" >> .env
           echo "TESTMO_TOKEN=${{ secrets.TESTMO_TOKEN }}" >> .env
           echo "TESTMO_PROJECT_ID=${{ secrets.TESTMO_PROJECT_ID }}" >> .env
-
           echo "BASE_URL=${{ secrets.BASE_URL }}" >> .env
           echo "TEST_EMAIL=${{ secrets.TEST_EMAIL }}" >> .env
           echo "TEST_PASSWORD=${{ secrets.TEST_PASSWORD }}" >> .env
           echo "INVALID_EMAIL=${{ secrets.INVALID_EMAIL }}" >> .env
           echo "INVALID_PASSWORD=${{ secrets.INVALID_PASSWORD }}" >> .env
 
-      - name: 🌍 Export .env variables to environment
-        run: |
-          set -o allexport
-          source .env
-          set +o allexport
-
       - name: 🔍 Debug environment variables and .env file
         run: |
           echo "Contents of .env file:"
           cat .env
+          echo "Loading .env file into environment"
+          set -a
+          source .env
+          set +a
           echo "TESTMO_URL: $TESTMO_URL"
           echo "TESTMO_TOKEN: $TESTMO_TOKEN"
           echo "TESTMO_PROJECT_ID: $TESTMO_PROJECT_ID"
           env | grep TESTMO
 
       - name: 🧪 Run tests and report to TestRail and Testmo
-        run: npx dotenv -e .env -- npm run test:with-report
+        run: npm run test:with-report
         env:
+          TESTMO_URL: ${{ secrets.TESTMO_URL }}
+          TESTMO_TOKEN: ${{ secrets.TESTMO_TOKEN }}
+          TESTMO_PROJECT_ID: ${{ secrets.TESTMO_PROJECT_ID }}
           TESTRAIL_HOST: ${{ secrets.TESTRAIL_HOST }}
           TESTRAIL_USER: ${{ secrets.TESTRAIL_USER }}
           TESTRAIL_PASSWORD: ${{ secrets.TESTRAIL_PASSWORD }}
           TESTRAIL_PROJECT_ID: ${{ secrets.TESTRAIL_PROJECT_ID }}
           TESTRAIL_SUITE_ID: ${{ secrets.TESTRAIL_SUITE_ID }}
-
-          TESTMO_URL: ${{ secrets.TESTMO_URL }}
-          TESTMO_TOKEN: ${{ secrets.TESTMO_TOKEN }}
-          TESTMO_PROJECT_ID: ${{ secrets.TESTMO_PROJECT_ID }}
-
           BASE_URL: ${{ secrets.BASE_URL }}
           TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
           TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
