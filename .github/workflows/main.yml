@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "npm"
+          cache: 'npm'
 
       - name: 📦 Install dependencies
         run: npm ci
@@ -57,7 +57,7 @@ jobs:
           echo "TESTMO_PROJECT_ID: $TESTMO_PROJECT_ID"
           env | grep TESTMO
 
-      - name: 🧪 Run tests and report to TestRail and Testmo
+      - name: 🧪 Run tests and report to TestRail
         run: npm run test:with-report
         env:
           TESTMO_URL: ${{ secrets.TESTMO_URL }}
@@ -73,6 +73,16 @@ jobs:
           TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
           INVALID_EMAIL: ${{ secrets.INVALID_EMAIL }}
           INVALID_PASSWORD: ${{ secrets.INVALID_PASSWORD }}
+
+      - name: 🔧 Debug Testmo command manually
+        if: failure()
+        run: |
+          echo "Running Testmo command manually with environment variables:"
+          npx testmo automation:run:submit --instance $TESTMO_URL --project-id $TESTMO_PROJECT_ID --name "Playwright Run" --source playwright --results test-results/results.xml
+        env:
+          TESTMO_URL: ${{ secrets.TESTMO_URL }}
+          TESTMO_TOKEN: ${{ secrets.TESTMO_TOKEN }}
+          TESTMO_PROJECT_ID: ${{ secrets.TESTMO_PROJECT_ID }}
 
       - name: 📸 Upload test-results (screenshots/videos)
         if: always()
