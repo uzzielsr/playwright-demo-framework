@@ -62,7 +62,7 @@ jobs:
           env | grep TESTMO
 
       - name: 🧪 Run tests and report to TestRail and Testmo
-        run: npm run test:with-report
+        run: npx dotenv -e .env -- npm run test:with-report
         env:
           TESTRAIL_HOST: ${{ secrets.TESTRAIL_HOST }}
           TESTRAIL_USER: ${{ secrets.TESTRAIL_USER }}
