@@ -91,6 +91,109 @@ npm run test:headed:with-report
 
 ---
 
+## 🧪 How to Create a New Test
+
+To add a new test using the Page Object Model structure, follow the steps below:
+
+### 1. Create Selectors
+
+Create a new file under `src/constants/selectors/`, for example:
+
+```ts
+// src/constants/selectors/account.selectors.ts
+export const accountSelectors = {
+  header: 'h1.account-title',
+  logoutButton: '#logout'
+};
+```
+
+> Use semantic and descriptive names.
+
+---
+
+### 2. Create the Page Object
+
+Create a corresponding class in `src/pages/`:
+
+```ts
+// src/pages/account.page.ts
+import { Page } from '@playwright/test';
+import { accountSelectors } from '../constants/selectors/account.selectors';
+
+export class AccountPage {
+  constructor(private page: Page) {}
+
+  async goto() {
+    await this.page.goto(`${process.env.BASE_URL}/account`);
+  }
+
+  async logout() {
+    await this.page.click(accountSelectors.logoutButton);
+  }
+
+  async isHeaderVisible() {
+    return this.page.isVisible(accountSelectors.header);
+  }
+}
+```
+
+---
+
+### 3. Create the Test File
+
+Inside `src/tests/`, create the test spec file:
+
+```ts
+// src/tests/account.spec.ts
+import { test, expect } from '@playwright/test';
+import { AccountPage } from '../pages/account.page';
+
+test('User can access account page', async ({ page }) => {
+  const accountPage = new AccountPage(page);
+  await accountPage.goto();
+  const headerVisible = await accountPage.isHeaderVisible();
+  expect(headerVisible).toBeTruthy();
+});
+```
+
+If you're using TestRail:
+
+```ts
+// testrail-case-id: 1234
+```
+
+---
+
+### 4. Run the Test
+
+```bash
+npm run test:with-report
+```
+
+This will:
+
+- Launch tests
+- Report results to TestRail
+- Save videos, screenshots, and reports to `/test-results/`
+
+---
+
+### 5. Define Required Environment Variables
+
+Ensure your `.env` file includes:
+
+```env
+BASE_URL=https://your-url.com
+TEST_EMAIL=your_email@example.com
+TEST_PASSWORD=your_password
+INVALID_EMAIL=invalid@example.com
+INVALID_PASSWORD=wrongpassword
+```
+
+These variables are automatically injected in CI pipelines via GitHub, CircleCI, or Jenkins.
+
+---
+
 ## Output Artifacts
 
 - **Screenshots and videos:** `/test-results/`
@@ -124,6 +227,9 @@ These are automatically set in CI via GitHub secrets.
 
 - Test results are automatically reported to TestRail using the credentials and IDs from your `.env` file.
 - Make sure your TestRail project and suite IDs are correct.
+- All TestRail credentials should be provided via environment variables such as `$TESTRAIL_USER`, `$TESTRAIL_PASSWORD`, etc.
+
+> 🔐 Do not hardcode credentials. Use environment variables or secrets.
 
 ---
 
@@ -134,13 +240,26 @@ These are automatically set in CI via GitHub secrets.
 
 ---
 
-## Contributing
+## CI/CD with CircleCI
 
-Contributions are welcome! Please open an issue or pull request for suggestions or improvements.
+1. Ensure you have the `.circleci/config.yml` file (included in this repo).
+2. In CircleCI → Project Settings → Environment Variables, define the following secrets:
+   - `TESTRAIL_HOST`
+   - `TESTRAIL_USER`
+   - `TESTRAIL_PASSWORD`
+   - `TESTRAIL_PROJECT_ID`
+   - `TESTRAIL_SUITE_ID`
 
----
+   - `BASE_URL`
+   - `TEST_EMAIL`
+   - `TEST_PASSWORD`
+   - `INVALID_EMAIL`
+   - `INVALID_PASSWORD`
+3. Push your code to GitHub.
+4. Go to [https://circleci.com](https://circleci.com) and connect your GitHub project.
+5. The pipeline will trigger automatically on each commit to branches like `main` if `.circleci/config.yml` is present.
 
-Updated to reflect the current state of the project and its integration with Playwright, TestRail, and GitHub Actions.
+Artifacts like screenshots, videos, and reports are stored in CircleCI after test runs.
 
 ---
 
@@ -160,7 +279,7 @@ export NVM_DIR="$HOME/.nvm"
 source "$NVM_DIR/nvm.sh"
 nvm use 22
 
-# ✅ TestRail + Jenkins config (inject via Jenkins credentials or environment)
+# ✅ TestRail + Jenkins config (inject via Jenkins credentials or environment variables)
 export TESTRAIL_HOST="$TESTRAIL_HOST"
 export TESTRAIL_USER="$TESTRAIL_USER"
 export TESTRAIL_PASSWORD="$TESTRAIL_PASSWORD"
@@ -182,7 +301,7 @@ npm run install:browsers
 npm run test:with-report
 ```
 
-> 🔐 Do not hardcode credentials. Use Jenkins credentials plugin or environment injection.
+> 🔐 Do not hardcode credentials. Use environment variables, Jenkins credentials plugin, or secrets injection.
 
 ---
 
@@ -224,4 +343,4 @@ test-results/**/*.*
 
 ---
 
-This configuration enables full integration between GitHub, Jenkins, TestRail, and Playwright.
+This configuration enables full integration between GitHub, CircleCI, Jenkins, TestRail, and Playwright.
