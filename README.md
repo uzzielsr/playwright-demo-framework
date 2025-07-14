@@ -11,9 +11,13 @@ Enterprise-grade end-to-end automation framework using Playwright + TypeScript, 
 - Page Object Model (POM)
 - Tracing (for debugging failures)
 - Automatic screenshots and videos
-- TestRail integration
-- GitHub Actions for CI/CD
 - Selector constants via TypeScript modules
+- TestRail integration
+- Testmo integration
+- GitHub Actions for CI/CD
+- CircleCI pipeline support
+- Jenkins integration support
+- dotenv for environment management
 
 ---
 
