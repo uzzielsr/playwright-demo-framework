@@ -46,6 +46,12 @@ jobs:
           echo "INVALID_EMAIL=${{ secrets.INVALID_EMAIL }}" >> .env
           echo "INVALID_PASSWORD=${{ secrets.INVALID_PASSWORD }}" >> .env
 
+      - name: 🌍 Export .env variables to environment
+        run: |
+          set -o allexport
+          source .env
+          set +o allexport
+
       - name: 🔍 Debug environment variables and .env file
         run: |
           echo "Contents of .env file:"
