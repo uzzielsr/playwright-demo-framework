@@ -30,9 +30,12 @@ Magento Demo E-commerce site:
 ```bash
 playwright-demo-framework/
 │
+├── .circleci/
+│   └── config.yml                 # CircleCI pipeline config
+│
 ├── .github/
 │   └── workflows/
-│       └── main.yml                # GitHub Actions workflow for CI/CD
+│       └── main.yml              # GitHub Actions workflow for CI/CD
 │
 ├── src/
 │   ├── constants/
