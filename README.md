@@ -1,6 +1,6 @@
 # Playwright Demo Framework
 
-Enterprise-grade end-to-end automation framework using **Playwright + TypeScript** with TestRail integration and CI/CD via GitHub Actions.
+Enterprise-grade end-to-end automation framework using Playwright + TypeScript, with integration to TestRail and Testmo, and CI/CD via GitHub Actions, CircleCI, and Jenkins.
 
 ---
 
@@ -422,7 +422,3 @@ To archive test results (screenshots, videos, and reports):
 ```bash
 test-results/**/*.*
 ```
-
----
-
-This configuration enables full integration between GitHub, CircleCI, Jenkins, TestRail, and Playwright.
