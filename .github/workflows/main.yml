@@ -35,6 +35,10 @@ jobs:
           echo "TESTRAIL_PROJECT_ID=${{ secrets.TESTRAIL_PROJECT_ID }}" >> .env
           echo "TESTRAIL_SUITE_ID=${{ secrets.TESTRAIL_SUITE_ID }}" >> .env
 
+          echo "TESTMO_URL=${{ secrets.TESTMO_URL }}" >> .env
+          echo "TESTMO_TOKEN=${{ secrets.TESTMO_TOKEN }}" >> .env
+          echo "TESTMO_PROJECT_ID=${{ secrets.TESTMO_PROJECT_ID }}" >> .env
+
           echo "BASE_URL=${{ secrets.BASE_URL }}" >> .env
           echo "TEST_EMAIL=${{ secrets.TEST_EMAIL }}" >> .env
           echo "TEST_PASSWORD=${{ secrets.TEST_PASSWORD }}" >> .env
