@@ -24,7 +24,7 @@ jobs:
             cd ~/Sites/magento
 
             mkdir -p ~/.composer
-            cat > ~/.composer/auth.json <<EOF
+            cat > ~/.composer/auth.json <<\EOF
             {
                 "http-basic": {
                     "repo.magento.com": {
