@@ -100,9 +100,31 @@ jobs:
               exit 1
             fi
 
-            # Run installation
-            echo "🚀 Starting Magento installation..."
-            curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/onelinesetup | bash -s -- magento.test community 2.4.8
+            # Download and setup the docker environment first
+            echo "🚀 Setting up Docker environment..."
+            curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/template | bash
+
+            # Now we need to provide credentials to the installation process
+            # The onelinesetup script expects credentials interactively, so we'll use expect
+            sudo apt-get install -y expect
+
+            # Create an expect script to provide credentials automatically
+            cat > install_magento.exp <<EOF
+#!/usr/bin/expect -f
+set timeout 300
+spawn ./bin/download community 2.4.8
+expect "Username:" { send "${MAGENTO_PUBLIC_KEY}\r" }
+expect "Password:" { send "${MAGENTO_PRIVATE_KEY}\r" }
+expect eof
+EOF
+
+            chmod +x install_magento.exp
+
+            echo "🚀 Starting Magento installation with automated credentials..."
+            ./install_magento.exp
+
+            # Setup the domain after download
+            ./bin/setup magento.test
 
             echo "⏳ Waiting for Magento installation to complete..."
             sleep 60
