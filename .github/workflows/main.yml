@@ -31,39 +31,79 @@ jobs:
 
       - name: 🐳 Setup Magento with Docker
         run: |
-          # Create magento directory
-          mkdir -p ~/magento
-          cd ~/magento
+          # Create your project directory then go into it (siguiendo la documentación oficial)
+          mkdir -p ~/Sites/magento
+          cd ~/Sites/magento
           
-          # Install Magento using Mark Shust's one-liner
+          # Create auth.json with Magento credentials before installation
+          mkdir -p ~/.composer
+          cat > ~/.composer/auth.json << EOF
+          {
+              "http-basic": {
+                  "repo.magento.com": {
+                      "username": "${{ secrets.MAGENTO_PUBLIC_KEY }}",
+                      "password": "${{ secrets.MAGENTO_PRIVATE_KEY }}"
+                  }
+              }
+          }
+          EOF
+          
+          # Run this automated one-liner from the directory you want to install your project.
           curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/onelinesetup | bash -s -- magento.test community 2.4.8
+          
+          # Wait for installation to complete
+          echo "Waiting for Magento installation to complete..."
+          sleep 60
+          
+          # Verify bin/magento exists
+          if [ ! -f "bin/magento" ]; then
+            echo "❌ Magento installation failed - bin/magento not found"
+            echo "📋 Listing directory contents:"
+            ls -la
+            echo "📋 Checking for errors in logs:"
+            docker-compose logs --tail=50
+            exit 1
+          fi
+          
+          echo "✅ Magento installation completed successfully"
           
           # Install sample data
           bin/magento sampledata:deploy
           bin/magento setup:upgrade
+          
+          # No need to create custom admin user - using default credentials:
+          # Username: john.smith
+          # Password: password123
+          echo "✅ Using default admin credentials: john.smith / password123"
           
           # Configure hosts for magento.test
           echo "127.0.0.1 magento.test" | sudo tee -a /etc/hosts
 
       - name: ⏳ Wait for Magento to be ready
         run: |
-          cd ~/magento
+          cd ~/Sites/magento
           
           # Wait for containers to be healthy
-          timeout 300 bash -c 'until docker-compose ps | grep -q "Up (healthy)"; do sleep 10; echo "Waiting for Magento..."; done'
+          echo "Waiting for containers to be healthy..."
+          timeout 300 bash -c 'until docker-compose ps | grep -q "Up (healthy)" || docker-compose ps | grep -q "Up"; do sleep 10; echo "Still waiting for containers..."; done'
           
           # Wait for Magento frontend to respond
-          timeout 180 bash -c 'until curl -k -s https://magento.test > /dev/null; do sleep 5; echo "Waiting for Magento frontend..."; done'
+          echo "Waiting for Magento frontend to respond..."
+          timeout 300 bash -c 'until curl -k -s -o /dev/null -w "%{http_code}" https://magento.test | grep -q "200\|302"; do sleep 10; echo "Still waiting for Magento frontend..."; done'
           
           echo "✅ Magento is ready at https://magento.test"
 
       - name: 🛠️ Create .env file
         run: |
           echo "BASE_URL=https://magento.test" >> .env
-          echo "TEST_EMAIL=john.smith@gmail.com" >> .env
-          echo "TEST_PASSWORD=password123" >> .env
-          echo "INVALID_EMAIL=invalid@example.com" >> .env
-          echo "INVALID_PASSWORD=wrongpassword" >> .env
+          echo "TEST_EMAIL=${{ secrets.TEST_EMAIL }}" >> .env
+          echo "TEST_PASSWORD=${{ secrets.TEST_PASSWORD }}" >> .env
+          echo "ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }}" >> .env
+          echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> .env
+          echo "MAGENTO_PUBLIC_KEY=${{ secrets.MAGENTO_PUBLIC_KEY }}" >> .env
+          echo "MAGENTO_PRIVATE_KEY=${{ secrets.MAGENTO_PRIVATE_KEY }}" >> .env
+          echo "INVALID_EMAIL=${{ secrets.INVALID_EMAIL }}" >> .env
+          echo "INVALID_PASSWORD=${{ secrets.INVALID_PASSWORD }}" >> .env
 
       - name: 🧪 Run Playwright tests
         run: npm run test
