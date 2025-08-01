@@ -109,14 +109,14 @@ jobs:
             sudo apt-get install -y expect
 
             # Create an expect script to provide credentials automatically
-            cat > install_magento.exp \<<'EOF'
-#!/usr/bin/expect -f
-set timeout 300
-spawn ./bin/download community 2.4.8
-expect "Username:" { send "$env(MAGENTO_PUBLIC_KEY)\r" }
-expect "Password:" { send "$env(MAGENTO_PRIVATE_KEY)\r" }
-expect eof
-EOF
+            cat > install_magento.exp \\<<'EOF'
+            #!/usr/bin/expect -f
+            set timeout 300
+            spawn ./bin/download community 2.4.8
+            expect "Username:" { send "$env(MAGENTO_PUBLIC_KEY)\r" }
+            expect "Password:" { send "$env(MAGENTO_PRIVATE_KEY)\r" }
+            expect eof
+            EOF
 
             chmod +x install_magento.exp
 
