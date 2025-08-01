@@ -106,7 +106,7 @@ jobs:
           echo "INVALID_PASSWORD=${{ secrets.INVALID_PASSWORD }}" >> .env
 
       - name: 🧪 Run Playwright tests
-        run: npm run test
+        run: npx playwright test --reporter=list
 
       - name: 📸 Upload test-results (screenshots/videos)
         if: always()
