@@ -40,6 +40,8 @@ export default defineConfig({
     headless: true,
     screenshot: 'on',
     video: 'on',
+    /* Ignore SSL certificate errors in CI environments */
+    ignoreHTTPSErrors: !!process.env.CI,
   },
 
   /* Configure projects for major browsers */
