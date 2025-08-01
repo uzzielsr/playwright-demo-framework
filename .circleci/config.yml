@@ -114,9 +114,17 @@ jobs:
             #!/usr/bin/env bash
             set -o errexit
 
+            # First start the containers if they're not running
+            echo "🚀 Starting Docker containers..."
+            docker compose up -d
+
+            # Wait for containers to be ready
+            echo "⏳ Waiting for containers to be ready..."
+            sleep 30
+
             # Ensure auth.json is in the right place for the container
             if [ -f .composer/auth.json ]; then
-              echo "✅ Found local auth.json, copying to container..."
+              echo "✅ Found local auth.json, configuring auth in container..."
               bin/composer config --global --auth http-basic.repo.magento.com "$1" "$2"
             fi
 
