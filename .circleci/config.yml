@@ -26,15 +26,29 @@ jobs:
             
             # Create auth.json with Magento credentials before installation
             mkdir -p ~/.composer
-            echo '{
-                "http-basic": {
-                    "repo.magento.com": {
-                        "username": "'$MAGENTO_PUBLIC_KEY'",
-                        "password": "'$MAGENTO_PRIVATE_KEY'"
-                    }
-                }
-            }' > ~/.composer/auth.json
-            
+            cat > ~/.composer/auth.json <<EOF
+{
+    "http-basic": {
+        "repo.magento.com": {
+            "username": "${MAGENTO_PUBLIC_KEY}",
+            "password": "${MAGENTO_PRIVATE_KEY}"
+        }
+    }
+}
+EOF
+      - run:
+          name: 🔍 Debug auth.json
+          command: |
+            if [ -f ~/.composer/auth.json ]; then
+              echo "✅ auth.json exists"
+              head -n 5 ~/.composer/auth.json | sed 's/[A-Za-z0-9]/*/g'
+            else
+              echo "❌ auth.json missing"
+              exit 1
+            fi
+      - run:
+          name: 🐳 Setup Magento with Docker
+          command: |
             # Run this automated one-liner from the directory you want to install your project.
             curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/onelinesetup | bash -s -- magento.test community 2.4.8
             

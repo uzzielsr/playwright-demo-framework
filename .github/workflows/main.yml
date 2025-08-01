@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: "npm"
 
       - name: 📦 Install dependencies
         run: npm ci
@@ -34,7 +34,7 @@ jobs:
           # Create your project directory then go into it (siguiendo la documentación oficial)
           mkdir -p ~/Sites/magento
           cd ~/Sites/magento
-          
+
           # Create auth.json with Magento credentials before installation
           mkdir -p ~/.composer
           cat > ~/.composer/auth.json << EOF
@@ -47,14 +47,14 @@ jobs:
               }
           }
           EOF
-          
+
           # Run this automated one-liner from the directory you want to install your project.
           curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/onelinesetup | bash -s -- magento.test community 2.4.8
-          
+
           # Wait for installation to complete
           echo "Waiting for Magento installation to complete..."
           sleep 60
-          
+
           # Verify bin/magento exists
           if [ ! -f "bin/magento" ]; then
             echo "❌ Magento installation failed - bin/magento not found"
@@ -64,40 +64,40 @@ jobs:
             docker compose logs --tail=50
             exit 1
           fi
-          
+
           echo "✅ Magento installation completed successfully"
-          
+
           # Install sample data
           bin/magento sampledata:deploy
           bin/magento setup:upgrade
-          
+
           # Disable CAPTCHA for testing
           echo "🔧 Disabling CAPTCHA for E2E testing..."
           bin/magento config:set customer/captcha/enable 0
           bin/magento config:set admin/captcha/enable 0
           bin/magento cache:clean
           bin/magento cache:flush
-          
+
           # No need to create custom admin user - using default credentials:
           # Username: john.smith
           # Password: password123
           echo "✅ Using default admin credentials: john.smith / password123"
-          
+
           # Configure hosts for magento.test
           echo "127.0.0.1 magento.test" | sudo tee -a /etc/hosts
 
       - name: ⏳ Wait for Magento to be ready
         run: |
           cd ~/Sites/magento
-          
+
           # Wait for containers to be healthy
           echo "Waiting for containers to be healthy..."
           timeout 300 bash -c 'until docker compose ps | grep -q "Up (healthy)" || docker compose ps | grep -q "Up"; do sleep 10; echo "Still waiting for containers..."; done'
-          
+
           # Wait for Magento frontend to respond
           echo "Waiting for Magento frontend to respond..."
           timeout 300 bash -c 'until curl -k -s -o /dev/null -w "%{http_code}" https://magento.test | grep -q "200\|302"; do sleep 10; echo "Still waiting for Magento frontend..."; done'
-          
+
           echo "✅ Magento is ready at https://magento.test"
 
       - name: 🛠️ Create .env file
