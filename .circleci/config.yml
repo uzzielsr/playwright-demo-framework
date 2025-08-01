@@ -1,9 +1,9 @@
 version: 2.1
 orbs:
   node: circleci/node@5
+
 jobs:
   test-node:
-    # Install node dependencies and run tests
     executor: node/default
     steps:
       - checkout
@@ -14,28 +14,28 @@ jobs:
       - run:
           name: 🎭 Install Playwright browsers
           command: npx playwright install chromium --with-deps
+
+      # 1️⃣ Create auth.json
       - run:
-          name: 🐳 Setup Magento with Docker
+          name: 🐳 Setup Magento auth.json
           command: |
-            # Install bc command (required by some scripts)
             sudo apt-get update && sudo apt-get install -y bc
-            
-            # Create your project directory then go into it
             mkdir -p ~/Sites/magento
             cd ~/Sites/magento
-            
-            # Create auth.json with Magento credentials before installation
+
             mkdir -p ~/.composer
             cat > ~/.composer/auth.json <<EOF
-{
-    "http-basic": {
-        "repo.magento.com": {
-            "username": "${MAGENTO_PUBLIC_KEY}",
-            "password": "${MAGENTO_PRIVATE_KEY}"
-        }
-    }
-}
-EOF
+            {
+                "http-basic": {
+                    "repo.magento.com": {
+                        "username": "${MAGENTO_PUBLIC_KEY}",
+                        "password": "${MAGENTO_PRIVATE_KEY}"
+                    }
+                }
+            }
+            EOF
+
+      # 2️⃣ Debug auth.json
       - run:
           name: 🔍 Debug auth.json
           command: |
@@ -46,60 +46,48 @@ EOF
               echo "❌ auth.json missing"
               exit 1
             fi
+
+      # 3️⃣ Install Magento
       - run:
-          name: 🐳 Setup Magento with Docker
+          name: 🐳 Install Magento with Docker
           command: |
-            # Run this automated one-liner from the directory you want to install your project.
+            cd ~/Sites/magento
             curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/onelinesetup | bash -s -- magento.test community 2.4.8
-            
-            # Wait for installation to complete
+
             echo "Waiting for Magento installation to complete..."
             sleep 60
-            
-            # Verify bin/magento exists
+
             if [ ! -f "bin/magento" ]; then
               echo "❌ Magento installation failed - bin/magento not found"
-              echo "📋 Listing directory contents:"
               ls -la
-              echo "📋 Checking for errors in logs:"
               docker compose logs --tail=50 || echo "No docker compose logs available"
               exit 1
             fi
-            
+
             echo "✅ Magento installation completed successfully"
-            
-            # Install sample data
             bin/magento sampledata:deploy
             bin/magento setup:upgrade
-            
-            # Disable CAPTCHA for testing
-            echo "🔧 Disabling CAPTCHA for E2E testing..."
             bin/magento config:set customer/captcha/enable 0
             bin/magento config:set admin/captcha/enable 0
             bin/magento cache:clean
             bin/magento cache:flush
-            
-            # No need to create custom admin user - using default credentials:
-            # Username: john.smith
-            # Password: password123
             echo "✅ Using default admin credentials: john.smith / password123"
-            
-            # Configure hosts for magento.test
             echo "127.0.0.1 magento.test" | sudo tee -a /etc/hosts
+
+      # 4️⃣ Wait for Magento to be ready
       - run:
           name: ⏳ Wait for Magento to be ready
           command: |
             cd ~/Sites/magento
-            
-            # Wait for containers to be healthy
             echo "Waiting for containers to be healthy..."
             timeout 300 bash -c 'until docker compose ps | grep -q "Up (healthy)" || docker compose ps | grep -q "Up"; do sleep 10; echo "Still waiting for containers..."; done'
-            
-            # Wait for Magento frontend to respond
+
             echo "Waiting for Magento frontend to respond..."
-            timeout 300 bash -c 'until curl -k -s -o /dev/null -w "%{http_code}" https://magento.test | grep -q "200\|302"; do sleep 10; echo "Still waiting for Magento frontend..."; done'
-            
+            timeout 300 bash -c 'until curl -k -s -o /dev/null -w "%{http_code}" https://magento.test | grep -q "200\\|302"; do sleep 10; echo "Still waiting for Magento frontend..."; done'
+
             echo "✅ Magento is ready at https://magento.test"
+
+      # 5️⃣ Create .env file
       - run:
           name: 🛠️ Create .env file
           command: |
@@ -112,25 +100,24 @@ EOF
             echo "MAGENTO_PRIVATE_KEY=$MAGENTO_PRIVATE_KEY" >> .env
             echo "INVALID_EMAIL=$INVALID_EMAIL" >> .env
             echo "INVALID_PASSWORD=$INVALID_PASSWORD" >> .env
+
+      # 6️⃣ Run tests
       - run:
           name: 🧪 Run Playwright tests
           command: npx playwright test --project=chromium --reporter=list
+
   deploy:
-    # This is an example deploy job, not actually used by the workflow
     docker:
       - image: cimg/base:stable
     steps:
-      # Replace this with steps to deploy to users
       - run:
           name: deploy
           command: "#e.g. ./deploy.sh"
       - run:
           name: found github actions config
           command: ":"
+
 workflows:
   build-and-test:
     jobs:
       - test-node
-    # - deploy:
-    #     requires:
-    #       - test-node
