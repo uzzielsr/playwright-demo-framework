@@ -24,28 +24,6 @@ export class LoginPage {
         await this.page.click(LoginSelectors.submitButton);
     }
 
-    async loginWithValidCredentials() {
-        const email = process.env.TEST_EMAIL;
-        const password = process.env.TEST_PASSWORD;
-
-        if (!email || !password) {
-            throw new Error('❌ TEST_EMAIL or TEST_PASSWORD is not defined in the .env file.');
-        }
-
-        await this.login(email, password);
-    }
-
-    async loginWithInvalidCredentials() {
-        const email = process.env.INVALID_EMAIL;
-        const password = process.env.INVALID_PASSWORD;
-
-        if (!email || !password) {
-            throw new Error('❌ INVALID_EMAIL or INVALID_PASSWORD is not defined in the .env file.');
-        }
-
-        await this.login(email, password);
-    }
-
     async isUserLoggedIn(): Promise<boolean> {
         try {
             await this.page.waitForSelector(LoginSelectors.homeTitle, { timeout: 5000 });
