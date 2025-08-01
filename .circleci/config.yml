@@ -108,7 +108,7 @@ jobs:
           command: npx playwright install chromium --with-deps
       - run:
           name: 🧪 Run Playwright tests
-          command: npx playwright test --reporter=list
+          command: npx playwright test --project=chromium  --reporter=list
   deploy:
     # This is an example deploy job, not actually used by the workflow
     docker:
