@@ -7,13 +7,18 @@ jobs:
     executor: node/default
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
       - node/install-packages:
           pkg-manager: npm
       - run:
+          name: 🎭 Install Playwright browsers
+          command: npx playwright install chromium --with-deps
+      - run:
           name: 🐳 Setup Magento with Docker
           command: |
+            # Install Docker Compose
+            sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+            
             # Install bc command (required by some scripts)
             sudo apt-get update && sudo apt-get install -y bc
             
@@ -23,7 +28,7 @@ jobs:
             
             # Create auth.json with Magento credentials before installation
             mkdir -p ~/.composer
-            cat > ~/.composer/auth.json \<< EOF
+            cat > ~/.composer/auth.json << 'EOF'
             {
                 "http-basic": {
                     "repo.magento.com": {
@@ -34,45 +39,43 @@ jobs:
             }
             EOF
             
-            # Download and run the setup script with more verbose output
-            echo "📥 Downloading Mark Shust's setup script..."
-            curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/onelinesetup > setup.sh
-            chmod +x setup.sh
+            # Replace environment variables in auth.json
+            sed -i "s/\$MAGENTO_PUBLIC_KEY/$MAGENTO_PUBLIC_KEY/g" ~/.composer/auth.json
+            sed -i "s/\$MAGENTO_PRIVATE_KEY/$MAGENTO_PRIVATE_KEY/g" ~/.composer/auth.json
             
-            echo "🚀 Running Magento installation..."
-            bash -x setup.sh magento.test community 2.4.8
+            # Run this automated one-liner from the directory you want to install your project.
+            curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/onelinesetup | bash -s -- magento.test community 2.4.8
             
-            # Wait longer for installation to complete
-            echo "⏳ Waiting for Magento installation to complete..."
-            sleep 90
-            
-            # Check if directory was created and list contents
-            echo "📋 Current directory: $(pwd)"
-            ls -la
+            # Wait for installation to complete
+            echo "Waiting for Magento installation to complete..."
+            sleep 60
             
             # Verify bin/magento exists
             if [ ! -f "bin/magento" ]; then
               echo "❌ Magento installation failed - bin/magento not found"
               echo "📋 Listing directory contents:"
               ls -la
-              echo "📋 Checking if any magento directories exist:"
-              find ~/Sites -name "bin" -type d 2>/dev/null || echo "No bin directories found"
               echo "📋 Checking for errors in logs:"
-              docker compose logs --tail=100 || echo "No docker compose logs available"
+              docker-compose logs --tail=50 || echo "No docker compose logs available"
               exit 1
             fi
             
             echo "✅ Magento installation completed successfully"
             
-            # Make sure we have execution permissions
-            chmod +x bin/magento
+            # Install sample data
+            bin/magento sampledata:deploy
+            bin/magento setup:upgrade
             
-            # Install sample data with error handling
-            echo "📦 Installing sample data..."
-            bin/magento sampledata:deploy || echo "Sample data deployment failed, continuing..."
-            bin/magento setup:upgrade || echo "Setup upgrade failed, continuing..."
-            bin/magento cache:flush || echo "Cache flush failed, continuing..."
+            # Disable CAPTCHA for testing
+            echo "🔧 Disabling CAPTCHA for E2E testing..."
+            bin/magento config:set customer/captcha/enable 0
+            bin/magento config:set admin/captcha/enable 0
+            bin/magento cache:clean
+            bin/magento cache:flush
             
+            # No need to create custom admin user - using default credentials:
+            # Username: john.smith
+            # Password: password123
             echo "✅ Using default admin credentials: john.smith / password123"
             
             # Configure hosts for magento.test
@@ -84,7 +87,7 @@ jobs:
             
             # Wait for containers to be healthy
             echo "Waiting for containers to be healthy..."
-            timeout 300 bash -c 'until docker compose ps | grep -q "Up (healthy)" || docker compose ps | grep -q "Up"; do sleep 10; echo "Still waiting for containers..."; done'
+            timeout 300 bash -c 'until docker-compose ps | grep -q "Up (healthy)" || docker-compose ps | grep -q "Up"; do sleep 10; echo "Still waiting for containers..."; done'
             
             # Wait for Magento frontend to respond
             echo "Waiting for Magento frontend to respond..."
@@ -104,11 +107,8 @@ jobs:
             echo "INVALID_EMAIL=$INVALID_EMAIL" >> .env
             echo "INVALID_PASSWORD=$INVALID_PASSWORD" >> .env
       - run:
-          name: 🎭 Install Playwright browsers
-          command: npx playwright install chromium --with-deps
-      - run:
           name: 🧪 Run Playwright tests
-          command: npx playwright test --project=chromium  --reporter=list
+          command: npx playwright test --project=chromium --reporter=list
   deploy:
     # This is an example deploy job, not actually used by the workflow
     docker:

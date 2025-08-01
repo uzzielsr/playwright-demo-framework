@@ -71,6 +71,13 @@ jobs:
           bin/magento sampledata:deploy
           bin/magento setup:upgrade
           
+          # Disable CAPTCHA for testing
+          echo "🔧 Disabling CAPTCHA for E2E testing..."
+          bin/magento config:set customer/captcha/enable 0
+          bin/magento config:set admin/captcha/enable 0
+          bin/magento cache:clean
+          bin/magento cache:flush
+          
           # No need to create custom admin user - using default credentials:
           # Username: john.smith
           # Password: password123
