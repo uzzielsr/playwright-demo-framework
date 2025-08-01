@@ -33,6 +33,16 @@ export class UserApi {
             }
         });
 
+        if (response.status() !== 200) {
+            const errorBody = await response.text();
+            console.error('❌ Admin token request failed:');
+            console.error('Status:', response.status());
+            console.error('Response:', errorBody);
+            console.error('URL:', `${this.normalizedBaseUrl}/rest/V1/integration/admin/token`);
+            console.error('Admin Username:', adminUsername);
+            throw new Error(`Failed to get admin token. Status: ${response.status()}, Response: ${errorBody}`);
+        }
+
         expect(response.status()).toBe(200);
         this.adminToken = await response.text();
         this.adminToken = this.adminToken.replace(/"/g, '');
