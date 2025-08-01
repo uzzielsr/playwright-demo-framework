@@ -104,8 +104,9 @@ jobs:
         run: |
           cd ~/Sites/magento
 
-          # Disable Two-Factor Authentication for API testing
-          echo "🔓 Disabling Two-Factor Authentication for testing..."
+          # Disable Two-Factor Authentication modules for API testing (order matters due to dependencies)
+          echo "🔓 Disabling Two-Factor Authentication modules for testing..."
+          bin/magento module:disable Magento_AdminAdobeIms TwoFactorAuth
           bin/magento module:disable Magento_TwoFactorAuth
           bin/magento cache:flush
 
