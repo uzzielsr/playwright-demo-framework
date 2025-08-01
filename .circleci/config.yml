@@ -105,7 +105,7 @@ jobs:
             echo "INVALID_PASSWORD=$INVALID_PASSWORD" >> .env
       - run:
           name: 🎭 Install Playwright browsers
-          command: npx playwright install --with-deps
+          command: npx playwright install chromium --with-deps
       - run:
           name: 🧪 Run Playwright tests
           command: npm run test
