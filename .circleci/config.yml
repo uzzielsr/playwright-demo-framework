@@ -122,15 +122,19 @@ jobs:
             echo "⏳ Waiting for containers to be ready..."
             sleep 30
 
+            # Clean the src directory if it exists (required for Magento installation)
+            if [ -d "src" ]; then
+              echo "🧹 Cleaning src directory for fresh Magento installation..."
+              rm -rf src/*
+              rm -rf src/.[^.]*
+            fi
+
             # Instead of using global config, we'll mount the auth.json directly
             if [ -f .composer/auth.json ]; then
-              echo "✅ Found local auth.json, mounting it to container..."
-              # Copy auth.json to src directory which gets mounted in the container
-              mkdir -p src/.composer
-              cp .composer/auth.json src/.composer/auth.json
-              
-              # Also set environment variables for the container
+              echo "✅ Found local auth.json, setting up container authentication..."
+              # Set environment variable for the container
               export COMPOSER_AUTH=$(cat .composer/auth.json)
+              echo "🔑 COMPOSER_AUTH environment variable set"
             fi
 
             # Run the original download command
