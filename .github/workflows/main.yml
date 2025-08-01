@@ -1,12 +1,13 @@
-name: test
+name: Magento E2E Tests
 
 on:
   schedule:
     - cron: "0 11 * * *"
   pull_request:
     branches: ["main"]
+  workflow_dispatch:
 
-run-name: "Playwright Run – ${{ github.event_name }} – Run #${{ github.run_number }}"
+run-name: "Magento E2E – ${{ github.event_name }} – Run #${{ github.run_number }}"
 
 jobs:
   test:
@@ -28,42 +29,44 @@ jobs:
       - name: 🎭 Install Playwright browsers
         run: npx playwright install --with-deps
 
+      - name: 🐳 Setup Magento with Docker
+        run: |
+          # Create magento directory
+          mkdir -p ~/magento
+          cd ~/magento
+          
+          # Install Magento using Mark Shust's one-liner
+          curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/onelinesetup | bash -s -- magento.test community 2.4.8
+          
+          # Install sample data
+          bin/magento sampledata:deploy
+          bin/magento setup:upgrade
+          
+          # Configure hosts for magento.test
+          echo "127.0.0.1 magento.test" | sudo tee -a /etc/hosts
+
+      - name: ⏳ Wait for Magento to be ready
+        run: |
+          cd ~/magento
+          
+          # Wait for containers to be healthy
+          timeout 300 bash -c 'until docker-compose ps | grep -q "Up (healthy)"; do sleep 10; echo "Waiting for Magento..."; done'
+          
+          # Wait for Magento frontend to respond
+          timeout 180 bash -c 'until curl -k -s https://magento.test > /dev/null; do sleep 5; echo "Waiting for Magento frontend..."; done'
+          
+          echo "✅ Magento is ready at https://magento.test"
+
       - name: 🛠️ Create .env file
         run: |
-          echo "TESTRAIL_HOST=${{ secrets.TESTRAIL_HOST }}" >> .env
-          echo "TESTRAIL_USER=${{ secrets.TESTRAIL_USER }}" >> .env
-          echo "TESTRAIL_PASSWORD=${{ secrets.TESTRAIL_PASSWORD }}" >> .env
-          echo "TESTRAIL_PROJECT_ID=${{ secrets.TESTRAIL_PROJECT_ID }}" >> .env
-          echo "TESTRAIL_SUITE_ID=${{ secrets.TESTRAIL_SUITE_ID }}" >> .env
+          echo "BASE_URL=https://magento.test" >> .env
+          echo "TEST_EMAIL=john.smith@gmail.com" >> .env
+          echo "TEST_PASSWORD=password123" >> .env
+          echo "INVALID_EMAIL=invalid@example.com" >> .env
+          echo "INVALID_PASSWORD=wrongpassword" >> .env
 
-          echo "TESTMO_URL=${{ secrets.TESTMO_URL }}" >> .env
-          echo "TESTMO_TOKEN=${{ secrets.TESTMO_TOKEN }}" >> .env
-          echo "TESTMO_PROJECT_ID=${{ secrets.TESTMO_PROJECT_ID }}" >> .env
-
-          echo "BASE_URL=${{ secrets.BASE_URL }}" >> .env
-          echo "TEST_EMAIL=${{ secrets.TEST_EMAIL }}" >> .env
-          echo "TEST_PASSWORD=${{ secrets.TEST_PASSWORD }}" >> .env
-          echo "INVALID_EMAIL=${{ secrets.INVALID_EMAIL }}" >> .env
-          echo "INVALID_PASSWORD=${{ secrets.INVALID_PASSWORD }}" >> .env
-
-      - name: 🧪 Run tests and report to TestRail
-        run: npm run test:with-report
-        env:
-          TESTRAIL_HOST: ${{ secrets.TESTRAIL_HOST }}
-          TESTRAIL_USER: ${{ secrets.TESTRAIL_USER }}
-          TESTRAIL_PASSWORD: ${{ secrets.TESTRAIL_PASSWORD }}
-          TESTRAIL_PROJECT_ID: ${{ secrets.TESTRAIL_PROJECT_ID }}
-          TESTRAIL_SUITE_ID: ${{ secrets.TESTRAIL_SUITE_ID }}
-
-          TESTMO_URL: ${{ secrets.TESTMO_URL }}
-          TESTMO_TOKEN: ${{ secrets.TESTMO_TOKEN }}
-          TESTMO_PROJECT_ID: ${{ secrets.TESTMO_PROJECT_ID }}
-
-          BASE_URL: ${{ secrets.BASE_URL }}
-          TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
-          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
-          INVALID_EMAIL: ${{ secrets.INVALID_EMAIL }}
-          INVALID_PASSWORD: ${{ secrets.INVALID_PASSWORD }}
+      - name: 🧪 Run Playwright tests
+        run: npm run test
 
       - name: 📸 Upload test-results (screenshots/videos)
         if: always()
