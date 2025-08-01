@@ -129,16 +129,30 @@ jobs:
               rm -rf src/.[^.]*
             fi
 
-            # Instead of using global config, we'll mount the auth.json directly
+            # Set up authentication using environment variables
             if [ -f .composer/auth.json ]; then
               echo "✅ Found local auth.json, setting up container authentication..."
-              # Set environment variable for the container
+              # Export COMPOSER_AUTH for the current shell and subprocesses
               export COMPOSER_AUTH=$(cat .composer/auth.json)
               echo "🔑 COMPOSER_AUTH environment variable set"
+              
+              # Also pass credentials directly to the download script
+              echo "🔐 Configuring credentials for download..."
+              # Create a temporary script that sets up auth and runs download
+              cat > bin/download-authenticated <<'INNER_EOF'
+#!/usr/bin/env bash
+set -o errexit
+export COMPOSER_AUTH="$1"
+bin/download "$2" "$3"
+INNER_EOF
+              chmod +x bin/download-authenticated
+              
+              # Run the authenticated download
+              ./bin/download-authenticated "$(cat .composer/auth.json)" "$3" "$4"
+            else
+              # Fallback to original download
+              bin/download "$3" "$4"
             fi
-
-            # Run the original download command
-            bin/download "$3" "$4"
             EOF
 
             chmod +x bin/download-with-auth
