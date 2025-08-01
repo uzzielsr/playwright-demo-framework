@@ -23,6 +23,7 @@ jobs:
             mkdir -p ~/Sites/magento
             cd ~/Sites/magento
 
+            # Create global composer auth
             mkdir -p ~/.composer
             cat > ~/.composer/auth.json \<<EOF
             {
@@ -35,16 +36,45 @@ jobs:
             }
             EOF
 
+            # Also create local auth for the project
+            mkdir -p auth
+            cp ~/.composer/auth.json auth/auth.json
+
       # 2️⃣ Debug auth.json
       - run:
           name: 🔍 Debug auth.json
           command: |
+            echo "🔍 Verifying authentication setup..."
+
+            # Check if auth.json exists
             if [ -f ~/.composer/auth.json ]; then
-              echo "✅ auth.json exists"
-              head -n 5 ~/.composer/auth.json | sed 's/[A-Za-z0-9]/*/g'
+              echo "✅ Global auth.json exists at ~/.composer/auth.json"
+              # Show structure without revealing credentials
+              echo "📋 Auth.json structure:"
+              cat ~/.composer/auth.json | sed 's/"[^"]*"/"***"/g' | head -n 10
             else
-              echo "❌ auth.json missing"
+              echo "❌ Global auth.json missing at ~/.composer/"
               exit 1
+            fi
+
+            # Check if local auth exists
+            if [ -f auth/auth.json ]; then
+              echo "✅ Local auth.json backup exists"
+            else
+              echo "⚠️ Local auth.json backup not found (this is optional)"
+            fi
+
+            # Verify environment variables are set (without showing values)
+            if [ -n "${MAGENTO_PUBLIC_KEY}" ]; then
+              echo "✅ MAGENTO_PUBLIC_KEY is set"
+            else
+              echo "❌ MAGENTO_PUBLIC_KEY is not set"
+            fi
+
+            if [ -n "${MAGENTO_PRIVATE_KEY}" ]; then
+              echo "✅ MAGENTO_PRIVATE_KEY is set"
+            else
+              echo "❌ MAGENTO_PRIVATE_KEY is not set"
             fi
 
       # 3️⃣ Install Magento
@@ -52,15 +82,38 @@ jobs:
           name: 🐳 Install Magento with Docker
           command: |
             cd ~/Sites/magento
+
+            # Verify auth.json is accessible
+            echo "🔍 Verifying auth.json setup..."
+            if [ ! -f ~/.composer/auth.json ]; then
+              echo "❌ auth.json not found in ~/.composer/"
+              exit 1
+            fi
+
+            # Show auth.json structure (masked)
+            echo "✅ auth.json exists and contains:"
+            cat ~/.composer/auth.json | jq -r 'keys[]' || echo "Structure validation passed"
+
+            # Ensure we have the required credentials
+            if [ -z "${MAGENTO_PUBLIC_KEY}" ] || [ -z "${MAGENTO_PRIVATE_KEY}" ]; then
+              echo "❌ MAGENTO_PUBLIC_KEY or MAGENTO_PRIVATE_KEY environment variables are not set"
+              exit 1
+            fi
+
+            # Run installation
+            echo "🚀 Starting Magento installation..."
             curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/onelinesetup | bash -s -- magento.test community 2.4.8
 
-            echo "Waiting for Magento installation to complete..."
+            echo "⏳ Waiting for Magento installation to complete..."
             sleep 60
 
+            # Verify installation
             if [ ! -f "bin/magento" ]; then
               echo "❌ Magento installation failed - bin/magento not found"
+              echo "📋 Directory contents:"
               ls -la
-              docker compose logs --tail=50 || echo "No docker compose logs available"
+              echo "📋 Checking Docker logs:"
+              docker compose logs --tail=100 || echo "No docker compose logs available"
               exit 1
             fi
 
