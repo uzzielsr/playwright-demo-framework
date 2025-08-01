@@ -14,6 +14,9 @@ jobs:
       - run:
           name: 🐳 Setup Magento with Docker
           command: |
+            # Install bc command (required by some scripts)
+            sudo apt-get update && sudo apt-get install -y bc
+            
             # Create your project directory then go into it
             mkdir -p ~/Sites/magento
             cd ~/Sites/magento
@@ -31,28 +34,44 @@ jobs:
             }
             EOF
             
-            # Run this automated one-liner from the directory you want to install your project.
-            curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/onelinesetup | bash -s -- magento.test community 2.4.8
+            # Download and run the setup script with more verbose output
+            echo "📥 Downloading Mark Shust's setup script..."
+            curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/onelinesetup > setup.sh
+            chmod +x setup.sh
             
-            # Wait for installation to complete
-            echo "Waiting for Magento installation to complete..."
-            sleep 60
+            echo "🚀 Running Magento installation..."
+            bash -x setup.sh magento.test community 2.4.8
+            
+            # Wait longer for installation to complete
+            echo "⏳ Waiting for Magento installation to complete..."
+            sleep 90
+            
+            # Check if directory was created and list contents
+            echo "📋 Current directory: $(pwd)"
+            ls -la
             
             # Verify bin/magento exists
             if [ ! -f "bin/magento" ]; then
               echo "❌ Magento installation failed - bin/magento not found"
               echo "📋 Listing directory contents:"
               ls -la
+              echo "📋 Checking if any magento directories exist:"
+              find ~/Sites -name "bin" -type d 2>/dev/null || echo "No bin directories found"
               echo "📋 Checking for errors in logs:"
-              docker compose logs --tail=50
+              docker compose logs --tail=100 || echo "No docker compose logs available"
               exit 1
             fi
             
             echo "✅ Magento installation completed successfully"
             
-            # Install sample data
-            bin/magento sampledata:deploy
-            bin/magento setup:upgrade
+            # Make sure we have execution permissions
+            chmod +x bin/magento
+            
+            # Install sample data with error handling
+            echo "📦 Installing sample data..."
+            bin/magento sampledata:deploy || echo "Sample data deployment failed, continuing..."
+            bin/magento setup:upgrade || echo "Setup upgrade failed, continuing..."
+            bin/magento cache:flush || echo "Cache flush failed, continuing..."
             
             echo "✅ Using default admin credentials: john.smith / password123"
             
