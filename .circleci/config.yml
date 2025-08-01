@@ -139,12 +139,12 @@ jobs:
               # Also pass credentials directly to the download script
               echo "🔐 Configuring credentials for download..."
               # Create a temporary script that sets up auth and runs download
-              cat > bin/download-authenticated <<'INNER_EOF'
-#!/usr/bin/env bash
-set -o errexit
-export COMPOSER_AUTH="$1"
-bin/download "$2" "$3"
-INNER_EOF
+              cat > bin/download-authenticated \<<'INNER_EOF'
+            #!/usr/bin/env bash
+            set -o errexit
+            export COMPOSER_AUTH="$1"
+            bin/download "$2" "$3"
+            INNER_EOF
               chmod +x bin/download-authenticated
               
               # Run the authenticated download
