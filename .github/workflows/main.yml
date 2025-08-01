@@ -61,7 +61,7 @@ jobs:
             echo "📋 Listing directory contents:"
             ls -la
             echo "📋 Checking for errors in logs:"
-            docker-compose logs --tail=50
+            docker compose logs --tail=50
             exit 1
           fi
           
@@ -85,7 +85,7 @@ jobs:
           
           # Wait for containers to be healthy
           echo "Waiting for containers to be healthy..."
-          timeout 300 bash -c 'until docker-compose ps | grep -q "Up (healthy)" || docker-compose ps | grep -q "Up"; do sleep 10; echo "Still waiting for containers..."; done'
+          timeout 300 bash -c 'until docker compose ps | grep -q "Up (healthy)" || docker compose ps | grep -q "Up"; do sleep 10; echo "Still waiting for containers..."; done'
           
           # Wait for Magento frontend to respond
           echo "Waiting for Magento frontend to respond..."
