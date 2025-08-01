@@ -25,8 +25,8 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: ([
     ['list'],
-    // Disable TestRail reporter in CI unless explicitly enabled
-    !process.env.CI || process.env.ENABLE_TESTRAIL === 'true' ? ['@zealteam/testrail-reporter'] : null,
+    // TestRail reporter temporarily disabled due to export issue
+    // !process.env.CI || process.env.ENABLE_TESTRAIL === 'true' ? ['@zealteam/testrail-reporter'] : null,
     ['junit', { outputFile: 'test-results/results.xml' }],
     ['html', { outputFolder: 'playwright-report', open: 'never' }]
   ] as any).filter(Boolean),

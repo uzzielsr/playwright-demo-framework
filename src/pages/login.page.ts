@@ -26,6 +26,7 @@ export class LoginPage {
 
     async isUserLoggedIn(): Promise<boolean> {
         try {
+            await this.page.waitForLoadState('load');
             await this.page.waitForSelector(LoginSelectors.homeTitle, { timeout: 5000 });
             await this.page.waitForSelector(LoginSelectors.loggedInIndicator, { timeout: 5000 });
             return true;
@@ -36,6 +37,7 @@ export class LoginPage {
 
     async isErrorDisplayed(): Promise<boolean> {
         try {
+            await this.page.waitForLoadState('load');
             await this.page.waitForSelector(LoginSelectors.errorMessage, { timeout: 5000 });
             return true;
         } catch {
