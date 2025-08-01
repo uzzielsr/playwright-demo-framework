@@ -104,24 +104,30 @@ jobs:
             echo "🚀 Setting up Docker environment..."
             curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/template | bash
 
-            # Now we need to provide credentials to the installation process
-            # The onelinesetup script expects credentials interactively, so we'll use expect
-            sudo apt-get install -y expect
+            # Copy the auth.json to the project directory so it's accessible to containers
+            echo "🔑 Setting up authentication for containers..."
+            mkdir -p .composer
+            cp ~/.composer/auth.json .composer/auth.json
 
-            # Create an expect script to provide credentials automatically
-            cat > install_magento.exp \<<'EOF'
-            #!/usr/bin/expect -f
-            set timeout 300
-            spawn ./bin/download community 2.4.8
-            expect "Username:" { send "$env(MAGENTO_PUBLIC_KEY)\r" }
-            expect "Password:" { send "$env(MAGENTO_PRIVATE_KEY)\r" }
-            expect eof
+            # Create a modified download script that ensures auth is available
+            cat > bin/download-with-auth \<<'EOF'
+            #!/usr/bin/env bash
+            set -o errexit
+
+            # Ensure auth.json is in the right place for the container
+            if [ -f .composer/auth.json ]; then
+              echo "✅ Found local auth.json, copying to container..."
+              bin/composer config --global --auth http-basic.repo.magento.com "$1" "$2"
+            fi
+
+            # Run the original download command
+            bin/download "$3" "$4"
             EOF
 
-            chmod +x install_magento.exp
+            chmod +x bin/download-with-auth
 
-            echo "🚀 Starting Magento installation with automated credentials..."
-            MAGENTO_PUBLIC_KEY="${MAGENTO_PUBLIC_KEY}" MAGENTO_PRIVATE_KEY="${MAGENTO_PRIVATE_KEY}" ./install_magento.exp
+            echo "🚀 Starting Magento installation with pre-configured authentication..."
+            ./bin/download-with-auth "${MAGENTO_PUBLIC_KEY}" "${MAGENTO_PRIVATE_KEY}" community 2.4.8
 
             # Setup the domain after download
             ./bin/setup magento.test
