@@ -7,6 +7,8 @@ jobs:
     executor: node/default
     steps:
       - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
       - node/install-packages:
           pkg-manager: npm
       - run:
@@ -15,10 +17,6 @@ jobs:
       - run:
           name: 🐳 Setup Magento with Docker
           command: |
-            # Install Docker Compose
-            sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-            
             # Install bc command (required by some scripts)
             sudo apt-get update && sudo apt-get install -y bc
             
@@ -28,20 +26,14 @@ jobs:
             
             # Create auth.json with Magento credentials before installation
             mkdir -p ~/.composer
-            cat > ~/.composer/auth.json \<< 'EOF'
-            {
+            echo '{
                 "http-basic": {
                     "repo.magento.com": {
-                        "username": "$MAGENTO_PUBLIC_KEY",
-                        "password": "$MAGENTO_PRIVATE_KEY"
+                        "username": "'$MAGENTO_PUBLIC_KEY'",
+                        "password": "'$MAGENTO_PRIVATE_KEY'"
                     }
                 }
-            }
-            EOF
-            
-            # Replace environment variables in auth.json
-            sed -i "s/\$MAGENTO_PUBLIC_KEY/$MAGENTO_PUBLIC_KEY/g" ~/.composer/auth.json
-            sed -i "s/\$MAGENTO_PRIVATE_KEY/$MAGENTO_PRIVATE_KEY/g" ~/.composer/auth.json
+            }' > ~/.composer/auth.json
             
             # Run this automated one-liner from the directory you want to install your project.
             curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/onelinesetup | bash -s -- magento.test community 2.4.8
@@ -56,7 +48,7 @@ jobs:
               echo "📋 Listing directory contents:"
               ls -la
               echo "📋 Checking for errors in logs:"
-              docker-compose logs --tail=50 || echo "No docker compose logs available"
+              docker compose logs --tail=50 || echo "No docker compose logs available"
               exit 1
             fi
             
@@ -87,7 +79,7 @@ jobs:
             
             # Wait for containers to be healthy
             echo "Waiting for containers to be healthy..."
-            timeout 300 bash -c 'until docker-compose ps | grep -q "Up (healthy)" || docker-compose ps | grep -q "Up"; do sleep 10; echo "Still waiting for containers..."; done'
+            timeout 300 bash -c 'until docker compose ps | grep -q "Up (healthy)" || docker compose ps | grep -q "Up"; do sleep 10; echo "Still waiting for containers..."; done'
             
             # Wait for Magento frontend to respond
             echo "Waiting for Magento frontend to respond..."
