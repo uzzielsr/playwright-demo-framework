@@ -192,10 +192,16 @@ jobs:
             echo "BASE_URL=https://magento.test" >> .env
             echo "TEST_EMAIL=$TEST_EMAIL" >> .env
             echo "TEST_PASSWORD=$TEST_PASSWORD" >> .env
+            echo "TEST_FIRST_NAME=$TEST_FIRST_NAME" >> .env
+            echo "TEST_LAST_NAME=$TEST_LAST_NAME" >> .env
+            echo "TEST_EMAIL_DOMAIN=$TEST_EMAIL_DOMAIN" >> .env
             echo "ADMIN_USERNAME=$ADMIN_USERNAME" >> .env
             echo "ADMIN_PASSWORD=$ADMIN_PASSWORD" >> .env
             echo "MAGENTO_PUBLIC_KEY=$MAGENTO_PUBLIC_KEY" >> .env
             echo "MAGENTO_PRIVATE_KEY=$MAGENTO_PRIVATE_KEY" >> .env
+            echo "MAGENTO_WEBSITE_ID=$MAGENTO_WEBSITE_ID" >> .env
+            echo "MAGENTO_STORE_ID=$MAGENTO_STORE_ID" >> .env
+            echo "MAGENTO_GROUP_ID=$MAGENTO_GROUP_ID" >> .env
             echo "INVALID_EMAIL=$INVALID_EMAIL" >> .env
             echo "INVALID_PASSWORD=$INVALID_PASSWORD" >> .env
 

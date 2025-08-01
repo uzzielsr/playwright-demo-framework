@@ -105,10 +105,16 @@ jobs:
           echo "BASE_URL=https://magento.test" >> .env
           echo "TEST_EMAIL=${{ secrets.TEST_EMAIL }}" >> .env
           echo "TEST_PASSWORD=${{ secrets.TEST_PASSWORD }}" >> .env
+          echo "TEST_FIRST_NAME=${{ secrets.TEST_FIRST_NAME }}" >> .env
+          echo "TEST_LAST_NAME=${{ secrets.TEST_LAST_NAME }}" >> .env
+          echo "TEST_EMAIL_DOMAIN=${{ secrets.TEST_EMAIL_DOMAIN }}" >> .env
           echo "ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }}" >> .env
           echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> .env
           echo "MAGENTO_PUBLIC_KEY=${{ secrets.MAGENTO_PUBLIC_KEY }}" >> .env
           echo "MAGENTO_PRIVATE_KEY=${{ secrets.MAGENTO_PRIVATE_KEY }}" >> .env
+          echo "MAGENTO_WEBSITE_ID=${{ secrets.MAGENTO_WEBSITE_ID }}" >> .env
+          echo "MAGENTO_STORE_ID=${{ secrets.MAGENTO_STORE_ID }}" >> .env
+          echo "MAGENTO_GROUP_ID=${{ secrets.MAGENTO_GROUP_ID }}" >> .env
           echo "INVALID_EMAIL=${{ secrets.INVALID_EMAIL }}" >> .env
           echo "INVALID_PASSWORD=${{ secrets.INVALID_PASSWORD }}" >> .env
 
