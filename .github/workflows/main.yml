@@ -100,7 +100,18 @@ jobs:
 
           echo "✅ Magento is ready at https://magento.test"
 
-      - name: 🛠️ Create .env file
+      - name: � Configure Magento for API testing
+        run: |
+          cd ~/Sites/magento
+
+          # Disable Two-Factor Authentication for API testing
+          echo "🔓 Disabling Two-Factor Authentication for testing..."
+          bin/magento module:disable Magento_TwoFactorAuth
+          bin/magento cache:flush
+
+          echo "✅ Two-Factor Authentication disabled for API testing"
+
+      - name: �🛠️ Create .env file
         run: |
           echo "BASE_URL=https://magento.test" >> .env
           echo "TEST_EMAIL=${{ secrets.TEST_EMAIL }}" >> .env
