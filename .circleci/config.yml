@@ -125,9 +125,7 @@ jobs:
               echo "⚠️ Composer installation failed or timed out"
               # Fallback: try the original download with expect to handle prompts
               echo "🔄 Trying fallback approach..."
-              echo -e "${MAGENTO_PUBLIC_KEY}
-${MAGENTO_PRIVATE_KEY}
-" | timeout 300 bin/download community 2.4.8 || {
+              echo -e "${MAGENTO_PUBLIC_KEY}\n${MAGENTO_PRIVATE_KEY}\n" | timeout 300 bin/download community 2.4.8 || {
                 echo "❌ All installation methods failed, creating dummy structure for testing..."
                 mkdir -p src
                 echo "<?php echo 'Magento installation placeholder';" > src/index.php
@@ -172,7 +170,7 @@ ${MAGENTO_PRIVATE_KEY}
           name: ⏳ Wait for Magento to be ready
           command: |
             cd ~/Sites/magento
-            
+
             # Check if containers are running
             if docker compose ps | grep -q "Up"; then
               echo "✅ Some containers are running, checking health..."
