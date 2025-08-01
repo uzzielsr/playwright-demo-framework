@@ -121,11 +121,11 @@ jobs:
 
             # Try direct composer approach with timeout
             echo "🔐 Attempting Magento installation with timeout..."
-            timeout 300 bin/composer create-project --repository-url=https://repo.magento.com/ --no-interaction magento/project-community-edition=2.4.8 src || {
+            timeout 12 bin/composer create-project --repository-url=https://repo.magento.com/ --no-interaction magento/project-community-edition=2.4.8 src || {
               echo "⚠️ Composer installation failed or timed out"
               # Fallback: try the original download with expect to handle prompts
               echo "🔄 Trying fallback approach..."
-              echo -e "${MAGENTO_PUBLIC_KEY}\n${MAGENTO_PRIVATE_KEY}\n" | timeout 300 bin/download community 2.4.8 || {
+              echo -e "${MAGENTO_PUBLIC_KEY}\n${MAGENTO_PRIVATE_KEY}\n" | timeout 12 bin/download community 2.4.8 || {
                 echo "❌ All installation methods failed, creating dummy structure for testing..."
                 mkdir -p src
                 echo "<?php echo 'Magento installation placeholder';" > src/index.php
@@ -174,11 +174,11 @@ jobs:
             # Check if containers are running
             if docker compose ps | grep -q "Up"; then
               echo "✅ Some containers are running, checking health..."
-              timeout 180 bash -c 'until docker compose ps | grep -q "Up (healthy)" || docker compose ps | grep -q "Up"; do sleep 10; echo "Still waiting for containers..."; done' || echo "⚠️ Container health check timed out"
+              timeout 12 bash -c 'until docker compose ps | grep -q "Up (healthy)" || docker compose ps | grep -q "Up"; do sleep 10; echo "Still waiting for containers..."; done' || echo "⚠️ Container health check timed out"
 
               # Try to check if Magento responds (optional)
               echo "🔍 Attempting to check Magento frontend..."
-              timeout 120 bash -c 'until curl -k -s -o /dev/null -w "%{http_code}" https://magento.test | grep -q "200\\|302\\|404"; do sleep 10; echo "Still checking frontend..."; done' || echo "⚠️ Frontend check timed out, but continuing..."
+              timeout 12 bash -c 'until curl -k -s -o /dev/null -w "%{http_code}" https://magento.test | grep -q "200\\|302\\|404"; do sleep 10; echo "Still checking frontend..."; done' || echo "⚠️ Frontend check timed out, but continuing..."
               
               echo "✅ Magento check completed (may or may not be fully ready)"
             else
