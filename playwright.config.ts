@@ -1,12 +1,32 @@
 import { defineConfig, devices } from '@playwright/test';
-
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
 import dotenv from 'dotenv';
 import path from 'path';
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+
+/**
+ * Carga las variables de entorno según el ENV especificado
+ * ENV=ci -> carga .env.ci
+ * ENV=prod -> carga .env.prod
+ * Sin ENV -> carga .env (desarrollo local)
+ */
+const environment = process.env.ENV;
+const envFile = environment ? `.env.${environment}` : '.env';
+const envPath = path.resolve(process.cwd(), envFile);
+
+console.log(`🔧 Loading environment: ${environment || 'default (local)'}`);
+console.log(`📁 Environment file: ${envFile}`);
+
+const result = dotenv.config({ path: envPath });
+
+if (result.error) {
+  throw new Error(`❌ Failed to load environment file: ${envFile}. Error: ${result.error.message}`);
+}
+
+// Validar que BASE_URL esté definida
+if (!process.env.BASE_URL) {
+  throw new Error(`❌ BASE_URL is not defined in ${envFile}`);
+}
+
+console.log(`✅ Environment loaded successfully: ${process.env.BASE_URL}`);
 
 /**
  * See https://playwright.dev/docs/test-configuration.

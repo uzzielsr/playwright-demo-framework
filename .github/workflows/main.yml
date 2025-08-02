@@ -112,26 +112,29 @@ jobs:
 
           echo "✅ Two-Factor Authentication disabled for API testing"
 
-      - name: �🛠️ Create .env file
+      - name: 🔧 Create CI environment file
         run: |
-          echo "BASE_URL=https://magento.test" >> .env
-          echo "TEST_EMAIL=${{ secrets.TEST_EMAIL }}" >> .env
-          echo "TEST_PASSWORD=${{ secrets.TEST_PASSWORD }}" >> .env
-          echo "TEST_FIRST_NAME=${{ secrets.TEST_FIRST_NAME }}" >> .env
-          echo "TEST_LAST_NAME=${{ secrets.TEST_LAST_NAME }}" >> .env
-          echo "TEST_EMAIL_DOMAIN=${{ secrets.TEST_EMAIL_DOMAIN }}" >> .env
-          echo "ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }}" >> .env
-          echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> .env
-          echo "MAGENTO_PUBLIC_KEY=${{ secrets.MAGENTO_PUBLIC_KEY }}" >> .env
-          echo "MAGENTO_PRIVATE_KEY=${{ secrets.MAGENTO_PRIVATE_KEY }}" >> .env
-          echo "MAGENTO_WEBSITE_ID=${{ secrets.MAGENTO_WEBSITE_ID }}" >> .env
-          echo "MAGENTO_STORE_ID=${{ secrets.MAGENTO_STORE_ID }}" >> .env
-          echo "MAGENTO_GROUP_ID=${{ secrets.MAGENTO_GROUP_ID }}" >> .env
-          echo "INVALID_EMAIL=${{ secrets.INVALID_EMAIL }}" >> .env
-          echo "INVALID_PASSWORD=${{ secrets.INVALID_PASSWORD }}" >> .env
+          cat > .env.ci << EOF
+          BASE_URL=${{ secrets.BASE_URL || 'https://magento.test' }}
+          TEST_EMAIL=${{ secrets.TEST_EMAIL }}
+          TEST_PASSWORD=${{ secrets.TEST_PASSWORD }}
+          TEST_FIRST_NAME=${{ secrets.TEST_FIRST_NAME }}
+          TEST_LAST_NAME=${{ secrets.TEST_LAST_NAME }}
+          TEST_EMAIL_DOMAIN=${{ secrets.TEST_EMAIL_DOMAIN }}
+          ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
+          MAGENTO_PUBLIC_KEY=${{ secrets.MAGENTO_PUBLIC_KEY }}
+          MAGENTO_PRIVATE_KEY=${{ secrets.MAGENTO_PRIVATE_KEY }}
+          MAGENTO_WEBSITE_ID=${{ secrets.MAGENTO_WEBSITE_ID }}
+          MAGENTO_STORE_ID=${{ secrets.MAGENTO_STORE_ID }}
+          MAGENTO_GROUP_ID=${{ secrets.MAGENTO_GROUP_ID }}
+          INVALID_EMAIL=${{ secrets.INVALID_EMAIL }}
+          INVALID_PASSWORD=${{ secrets.INVALID_PASSWORD }}
+          EOF
+          echo "✅ CI environment file created"
 
       - name: 🧪 Run Playwright tests
-        run: npx playwright test --project=chromium  --reporter=list
+        run: ENV=ci npx playwright test --project=chromium --reporter=list
 
       - name: 📸 Upload test-results (screenshots/videos)
         if: always()
