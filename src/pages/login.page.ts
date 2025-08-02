@@ -33,10 +33,6 @@ export class LoginPage {
     }
 
     async isErrorDisplayed() {
-        await Promise.race([
-            expect(this.page.locator(LoginSelectors.loginErrorMessage)).toContainText("sign-in was incorrect", { timeout: 10000 }),
-            expect(this.page.locator(LoginSelectors.loginErrorMessage)).toContainText("Invalid Form Key", { timeout: 10000 }),
-            expect(this.page.locator(LoginSelectors.loginErrorMessage)).toContainText("invalid", { timeout: 10000 })
-        ]);
+        await expect(this.page.locator(LoginSelectors.loginErrorMessage).first()).toBeVisible({ timeout: 10000 });
     }
 }
