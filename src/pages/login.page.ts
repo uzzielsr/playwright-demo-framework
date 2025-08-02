@@ -22,7 +22,9 @@ export class LoginPage {
     async login(email: string, password: string) {
         await this.page.fill(LoginSelectors.usernameField, email);
         await this.page.fill(LoginSelectors.passwordField, password);
-        await this.page.click(LoginSelectors.submitButton);
+        await this.page.locator(LoginSelectors.submitButton).first().waitFor({ state: 'visible', timeout: 30000 });
+        await this.page.locator(LoginSelectors.submitButton).first().click();
+
         await this.page.waitForLoadState('networkidle');
     }
 
