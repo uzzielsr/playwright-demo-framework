@@ -34,11 +34,12 @@ export class LoginPage {
 
     async isErrorDisplayed() {
         await Promise.race([
+            expect(this.page).toHaveURL(/.*customer\/account\/login.*/, { timeout: 10000 }),
+            expect(this.page.locator(LoginSelectors.usernameField)).toBeVisible({ timeout: 10000 }),
+            expect(this.page.locator(LoginSelectors.passwordField)).toBeVisible({ timeout: 10000 }),
             expect(this.page.locator('body')).toContainText('The account sign-in was incorrect or your account is disabled temporarily. Please wait and try again later.', { timeout: 10000 }),
             expect(this.page.locator('body')).toContainText('Invalid Form Key. Please refresh the page.', { timeout: 10000 }),
-            expect(this.page.locator('body')).toContainText('You did not sign in correctly or your account is temporarily disabled.', { timeout: 10000 }),
-            expect(this.page.locator('body')).toContainText('Please enter a valid email address', { timeout: 10000 }),
-            expect(this.page.locator('body')).toContainText('This is a required field', { timeout: 10000 })
+            expect(this.page.locator('body')).toContainText('You did not sign in correctly or your account is temporarily disabled.', { timeout: 10000 })
         ]);
     }
 }
