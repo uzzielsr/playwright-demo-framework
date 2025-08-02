@@ -14,20 +14,19 @@ export class LoginPage {
             throw new Error('BASE_URL is not defined in the .env file.');
         }
         await this.page.goto(`${baseUrl}`);
-        await this.page.waitForLoadState('load');
+        await this.page.waitForLoadState('networkidle');
         await this.page.click(LoginSelectors.loginLink);
-        await this.page.waitForLoadState('load');
+        await this.page.waitForLoadState('networkidle');
     }
 
     async login(email: string, password: string) {
         await this.page.fill(LoginSelectors.usernameField, email);
         await this.page.fill(LoginSelectors.passwordField, password);
         await this.page.click(LoginSelectors.submitButton);
-        await this.page.waitForLoadState('load');
+        await this.page.waitForLoadState('networkidle');
     }
 
     async isUserLoggedIn(username: string) {
-        // Wait a bit more for CI environment and try with longer timeout
         await this.page.waitForLoadState('networkidle');
         await expect(this.page.locator(LoginSelectors.loggedInIndicator).first()).toContainText(`Welcome, ${username}`, { timeout: 15000 });
     }
