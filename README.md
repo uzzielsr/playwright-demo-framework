@@ -40,6 +40,9 @@ Enterprise-grade end-to-end automation framework for Magento 2.4.8 using Playwri
 ```bash
 playwright-demo-framework/
 │
+├── .circleci/
+│   └── config.yml                # CircleCI configuration (experimental)
+│
 ├── .github/
 │   └── workflows/
 │       └── main.yml              # GitHub Actions CI/CD with Docker Magento setup
