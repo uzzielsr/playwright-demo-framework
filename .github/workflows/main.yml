@@ -144,7 +144,7 @@ jobs:
           echo "✅ CI environment file created"
 
       - name: 🧪 Run Playwright tests
-        run: ENV=ci npx playwright test --project=chromium --reporter=list
+        run: ENV=ci npx playwright test --project=chromium --reporter=list,html
 
       - name: 📸 Upload test-results (screenshots/videos)
         if: always()
