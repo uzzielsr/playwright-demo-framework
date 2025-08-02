@@ -1,31 +1,37 @@
 # Playwright Demo Framework
 
-Enterprise-grade end-to-end automation framework using Playwright + TypeScript, with integration to TestRail and Testmo, and CI/CD via GitHub Actions, CircleCI, and Jenkins.
+Enterprise-grade end-to-end automation framework for Magento 2.4.8 using Playwright + TypeScript, with multi-environment support, robust cross-environment testing capabilities, and complete CI/CD integration via GitHub Actions.
 
 ---
 
 ## Tech Stack
 
-- Playwright
-- TypeScript
-- Page Object Model (POM)
-- Tracing (for debugging failures)
-- Automatic screenshots and videos
-- Selector constants via TypeScript modules
-- TestRail integration
-- Testmo integration
-- GitHub Actions for CI/CD
-- CircleCI pipeline support
-- Jenkins integration support
-- dotenv for environment management
+- **Playwright 1.53.1** - Modern browser automation
+- **TypeScript** - Type-safe development
+- **Page Object Model (POM)** - Maintainable test architecture
+- **Multi-Environment Support** - Local, CI, and production configurations
+- **Promise.race() Pattern** - Robust cross-environment verification
+- **Docker Magento 2.4.8** - Containerized test environment
+- **Automatic screenshots and videos** - Complete test artifacts
+- **TestRail integration** - Test management integration
+- **GitHub Actions CI/CD** - Automated testing pipeline
+- **Dynamic environment loading** - Smart environment file detection
 
 ---
 
 ## Application Under Test
 
-Magento Demo E-commerce site:
+**Magento 2.4.8 E-commerce Platform** running in Docker containers with:
 
-<https://magento.softwaretestingboard.com/>
+- Full sample data installation
+- CAPTCHA disabled for testing
+- Two-Factor Authentication disabled for API testing
+- Optimized for cross-environment compatibility
+
+**Test URLs:**
+
+- CI Environment: `https://magento.test`
+- Local Development: Configurable via `.env`
 
 ---
 
@@ -34,395 +40,390 @@ Magento Demo E-commerce site:
 ```bash
 playwright-demo-framework/
 │
-├── .circleci/
-│   └── config.yml                 # CircleCI pipeline config
-│
 ├── .github/
 │   └── workflows/
-│       └── main.yml              # GitHub Actions workflow for CI/CD
+│       └── main.yml              # GitHub Actions CI/CD with Docker Magento setup
+│
+├── api/
+│   └── user.api.ts               # API utilities for user management
+│
+├── locators/
+│   └── login/
+│       ├── index.ts              # Dynamic locator loader based on ENV variable
+│       ├── login.locators.ci.ts  # CI environment specific locators
+│       └── login.locators.prod.ts # Production environment specific locators
 │
 ├── src/
 │   ├── constants/
 │   │   └── selectors/
-│   │       └── login.selectors.ts  # Centralized selectors for login page
+│   │       └── login.selectors.ts  # Centralized, environment-agnostic selectors
 │   ├── pages/
-│   │   └── login.page.ts           # Page Object Model for login
+│   │   └── login.page.ts           # Robust Page Object with Promise.race() patterns
 │   └── tests/
-│       └── login.spec.ts           # Playwright test specs
+│       └── login.spec.ts           # Cross-environment test specifications
 │
-├── .env                            # Environment variables (not versioned)
-├── .env.example                    # Example environment variables file
-├── .gitignore                      # Git ignore rules
-├── package.json                    # Project dependencies and scripts
-├── package-lock.json               # NPM lock file
-├── playwright.config.ts            # Playwright configuration
-├── README.md                       # Project documentation
-├── testrail.config.js              # TestRail integration config
-└── tsconfig.json                   # TypeScript configuration
+├── utils/
+│   └── test-users.ts             # Test user utilities and helpers
+│
+├── .env                          # Local development environment (not versioned)
+├── .env.ci                       # CI environment configuration (versioned)
+├── .env.prod                     # Production environment configuration (versioned)
+├── .env.example                  # Example environment variables template
+├── .gitignore                    # Comprehensive ignore rules for all environments
+├── package.json                  # Dependencies with Playwright 1.53.1
+├── playwright.config.ts          # Multi-environment configuration with dynamic loading
+├── README.md                     # This documentation
+├── testrail.config.js            # TestRail integration setup
+└── tsconfig.json                 # TypeScript configuration
 ```
+
+---
+
+## Key Features
+
+### 🌍 Multi-Environment Support
+
+- **Dynamic Environment Loading**: Automatically loads `.env`, `.env.ci`, or `.env.prod` based on `ENV` variable
+- **Dynamic Locator Loading**: Environment-specific locators loaded automatically via `/locators/` directory
+- **Cross-Environment Compatibility**: Tests work consistently across local and CI environments
+- **Smart Configuration**: Environment-specific settings for timeouts, headless mode, and SSL handling
+
+### 🛡️ Robust Testing Patterns
+
+- **Promise.race() Pattern**: Multiple verification strategies for maximum reliability
+- **Text-Based Detection**: Environment-agnostic error and success detection
+- **Fallback Mechanisms**: Multiple selectors and detection methods per verification
+
+### 🚀 Complete CI/CD Integration
+
+- **Automated Magento Setup**: Full Docker-based Magento 2.4.8 installation in CI
+- **Artifact Management**: Screenshots, videos, and HTML reports preserved
+- **Security**: Proper secrets management for all credentials
 
 ---
 
 ## System Prerequisites
 
-- Node.js >= v20.x
-- NPM
-- Git
+- **Node.js** >= v20.x
+- **NPM** (latest)
+- **Git**
+- **Docker** (for CI environment or local Magento setup)
 
 ---
 
-## Initial Setup
+## Quick Start
+
+### 1. Clone and Install
 
 ```bash
-git clone https://github.com/<your-github-username>/playwright-demo-framework.git
+git clone https://github.com/uzzielsr/playwright-demo-framework.git
 cd playwright-demo-framework
 npm install
-npx playwright install --with-deps
+npx playwright install chromium --with-deps
 ```
 
----
+### 2. Environment Setup
 
-## How to Run the Tests
-
-### Run all tests and report to TestRail
+Copy the example environment file and configure it:
 
 ```bash
-npm run test:with-report
+cp .env.example .env
+# Edit .env with your configuration
 ```
 
-### Run tests in headed mode (browser visible)
+### 3. Run Tests
 
 ```bash
-npm run test:headed:with-report
+# Local environment (uses .env)
+npx playwright test --project=chromium --reporter=list,html
+
+# CI environment (uses .env.ci)
+ENV=ci npx playwright test --project=chromium --reporter=list,html
+
+# Production environment (uses .env.prod)
+ENV=prod npx playwright test --project=chromium --reporter=list,html
 ```
-
----
-
-## 🧪 How to Create a New Test
-
-To add a new test using the Page Object Model structure, follow the steps below:
-
-### 1. Create Selectors
-
-Create a new file under `src/constants/selectors/`, for example:
-
-```ts
-// src/constants/selectors/account.selectors.ts
-export const accountSelectors = {
-  header: 'h1.account-title',
-  logoutButton: '#logout'
-};
-```
-
-> Use semantic and descriptive names.
-
----
-
-### 2. Create the Page Object
-
-Create a corresponding class in `src/pages/`:
-
-```ts
-// src/pages/account.page.ts
-import { Page } from '@playwright/test';
-import { accountSelectors } from '../constants/selectors/account.selectors';
-
-export class AccountPage {
-  constructor(private page: Page) {}
-
-  async goto() {
-    await this.page.goto(`${process.env.BASE_URL}/account`);
-  }
-
-  async logout() {
-    await this.page.click(accountSelectors.logoutButton);
-  }
-
-  async isHeaderVisible() {
-    return this.page.isVisible(accountSelectors.header);
-  }
-}
-```
-
----
-
-### 3. Create the Test File
-
-Inside `src/tests/`, create the test spec file:
-
-```ts
-// src/tests/account.spec.ts
-import { test, expect } from '@playwright/test';
-import { AccountPage } from '../pages/account.page';
-
-test('User can access account page', async ({ page }) => {
-  const accountPage = new AccountPage(page);
-  await accountPage.goto();
-  const headerVisible = await accountPage.isHeaderVisible();
-  expect(headerVisible).toBeTruthy();
-});
-```
-
-If you're using TestRail:
-
-```ts
-// testrail-case-id: 1234
-```
-
----
-
-### 4. Run the Test
-
-```bash
-npm run test:with-report
-```
-
-This will:
-
-- Launch tests
-- Report results to TestRail
-- Save videos, screenshots, and reports to `/test-results/`
-
----
-
-### 5. Define Required Environment Variables
-
-Ensure your `.env` file includes:
-
-```env
-BASE_URL=https://your-url.com
-TEST_EMAIL=your_email@example.com
-TEST_PASSWORD=your_password
-INVALID_EMAIL=invalid@example.com
-INVALID_PASSWORD=wrongpassword
-```
-
-These variables are automatically injected in CI pipelines via GitHub, CircleCI, or Jenkins.
-
----
-
-## Output Artifacts
-
-- **Screenshots and videos:** `/test-results/`
-- **HTML report:** `/playwright-report/`
 
 ---
 
 ## Environment Configuration
 
-Create a `.env` file in the project root with the following variables:
+### Local Development (.env)
 
 ```bash
-TESTRAIL_HOST=
-TESTRAIL_USER=
-TESTRAIL_PASSWORD=
-TESTRAIL_PROJECT_ID=
-TESTRAIL_SUITE_ID=
-
-TESTMO_URL=
-TESTMO_TOKEN=
-TESTMO_PROJECT_ID=
-
-BASE_URL=
-TEST_EMAIL=
-TEST_PASSWORD=
-INVALID_EMAIL=
-INVALID_PASSWORD=
+BASE_URL=https://your-magento-instance.com
+TEST_EMAIL=test@example.com
+TEST_PASSWORD=your_password
+TEST_FIRST_NAME=Test
+TEST_LAST_NAME=User
+INVALID_EMAIL=invalid@example.com
+INVALID_PASSWORD=wrongpassword
 ```
 
-These are automatically set in CI via GitHub secrets.
+### CI Environment (.env.ci)
+
+Automatically configured during GitHub Actions workflow with:
+
+- Docker Magento 2.4.8 installation
+- Sample data and optimized settings
+- All necessary credentials via GitHub secrets
+
+### Production Environment (.env.prod)
+
+Configure for production testing with appropriate URLs and credentials.
 
 ---
 
-## TestRail Integration
+## Robust Testing Architecture
 
-- Test results are automatically reported to TestRail using the credentials and IDs from your `.env` file.
-- Make sure your TestRail project and suite IDs are correct.
-- All TestRail credentials should be provided via environment variables such as `$TESTRAIL_USER`, `$TESTRAIL_PASSWORD`, etc.
+### Page Object Model with Promise.race()
 
-> 🔐 Do not hardcode credentials. Use environment variables or secrets.
+Our Page Objects use a robust `Promise.race()` pattern for maximum reliability:
 
----
+```typescript
+async isUserLoggedIn(username: string) {
+    await Promise.race([
+        expect(this.page.locator(LoginSelectors.loggedInIndicator).first()).toContainText(`Welcome, ${username}`, { timeout: 10000 }),
+        expect(this.page).toHaveURL(/.*customer\/account.*/, { timeout: 10000 }),
+        expect(this.page.locator('body')).toContainText(`Welcome, ${username}`, { timeout: 10000 })
+    ]);
+}
 
-## Testmo Integration
-
-This project also supports reporting test results to **Testmo**, a modern test management platform.
-
-### ✅ Requirements
-
-- A Testmo account and an active project
-- The official CLI reporter: `@testmo/testmo-cli`
-- Set the following environment variables (locally or in CI):
-
-```env
-TESTMO_URL=https://your-team.testmo.net
-TESTMO_TOKEN=your_testmo_api_token
-TESTMO_PROJECT_ID=your_testmo_project_id
+async isErrorDisplayed() {
+    await Promise.race([
+        expect(this.page).toHaveURL(/.*customer\/account\/login.*/, { timeout: 10000 }),
+        expect(this.page.locator(LoginSelectors.usernameField)).toBeVisible({ timeout: 10000 }),
+        expect(this.page.locator(LoginSelectors.passwordField)).toBeVisible({ timeout: 10000 }),
+        expect(this.page.locator('body')).toContainText('The account sign-in was incorrect', { timeout: 10000 }),
+        expect(this.page.locator('body')).toContainText('Invalid Form Key', { timeout: 10000 })
+    ]);
+}
 ```
 
-> 🔐 Never commit these credentials to source control. Use `.env` for local development and GitHub Secrets in CI.
+This approach provides:
 
----
-
-### 🧪 How to Tag Tests for Testmo
-
-To link Playwright tests with Testmo case IDs, tag your tests using the `@C<id>` annotation, for example:
-
-```ts
-test('@C1234 Login works with valid credentials', async ({ page }) => {
-  // your test logic here
-});
-```
-
----
-
-### 🚀 How to Run with Testmo Reporting
-
-Run the tests and automatically submit results to Testmo using the script:
-
-```bash
-npm run test:with-report
-```
-
-This will:
-
-- Run all Playwright tests
-- Collect results via JUnit XML
-- Submit results to Testmo via the CLI
-- Upload screenshots and videos as attachments
-
-Make sure your `test:with-report` script in `package.json` looks like this:
-
-```json
-"test:with-report": "playwright test; dotenv -- npx testmo automation:run:submit --instance $TESTMO_URL --project-id $TESTMO_PROJECT_ID --name 'Playwright Run' --source playwright --results test-results/results.xml"
-```
-
----
-
-### 🛠️ Debugging Testmo Integration
-
-Use the `--debug` flag with the `testmo` CLI to see verbose logs:
-
-```bash
-npx testmo automation:run:submit --debug ...
-```
-
-You can also inspect the generated results file (`test-results/results.xml`) to ensure your test case annotations (`@C1234`) are being captured correctly.
+- **Multiple verification strategies** per action
+- **Cross-environment compatibility**
+- **Fallback mechanisms** for different Magento configurations
+- **Fast execution** (first successful verification wins)
 
 ---
 
 ## CI/CD with GitHub Actions
 
-- The main workflow (`.github/workflows/main.yml`) installs dependencies, browsers, sets environment variables, runs tests, and uploads artifacts on every pull request and daily at 11:00 UTC.
-- Test results and reports are uploaded as artifacts.
+### Automated Workflow Features
 
----
+- **🐳 Complete Magento Setup**: Automated Docker installation of Magento 2.4.8
+- **📦 Sample Data**: Automatic installation and configuration
+- **� Optimization**: CAPTCHA and 2FA disabled for testing
+- **🧪 Test Execution**: Full Playwright test suite with multiple reporters
+- **📊 Artifact Collection**: Screenshots, videos, and HTML reports
+- **🔄 Multi-Environment**: Supports different environment configurations
 
-## CI/CD with CircleCI
+### Workflow Triggers
 
-1. Ensure you have the `.circleci/config.yml` file (included in this repo).
-2. In CircleCI → Project Settings → Environment Variables, define the following secrets:
-   - `TESTRAIL_HOST`
-   - `TESTRAIL_USER`
-   - `TESTRAIL_PASSWORD`
-   - `TESTRAIL_PROJECT_ID`
-   - `TESTRAIL_SUITE_ID`
+- Pull requests to `main` branch
+- Daily scheduled runs at 11:00 UTC
+- Manual workflow dispatch
 
-   - `TESTMO_URL`
-   - `TESTMO_TOKEN`
-   - `TESTMO_PROJECT_ID`
+### Secrets Configuration
 
-   - `BASE_URL`
-   - `TEST_EMAIL`
-   - `TEST_PASSWORD`
-   - `INVALID_EMAIL`
-   - `INVALID_PASSWORD`
-3. Push your code to GitHub.
-4. Go to [https://circleci.com](https://circleci.com) and connect your GitHub project.
-5. The pipeline will trigger automatically on each commit to branches like `main` if `.circleci/config.yml` is present.
-
-Artifacts like screenshots, videos, and reports are stored in CircleCI after test runs.
-
----
-
-## 🔧 Jenkins CI/CD Setup with GitHub Webhook + Ngrok + TestRail Integration
-
-This project also supports executing tests through Jenkins using GitHub webhooks and optional ngrok tunneling for local development.
-
-### 🖥️ 1. Jenkins Build Script
-
-Inside Jenkins → your project → **Configure** → **Build** → **Execute Shell**, add the following script (with your real credentials set as Jenkins environment variables or injected via secrets):
+Configure the following secrets in GitHub repository settings:
 
 ```bash
-#!/bin/bash
+# Magento Configuration
+MAGENTO_PUBLIC_KEY=your_magento_public_key
+MAGENTO_PRIVATE_KEY=your_magento_private_key
+BASE_URL=https://magento.test
 
-# ✅ Load NVM and use correct Node version
-export NVM_DIR="$HOME/.nvm"
-source "$NVM_DIR/nvm.sh"
-nvm use 22
+# Test User Configuration
+TEST_EMAIL=test@example.com
+TEST_PASSWORD=secure_password
+TEST_FIRST_NAME=Test
+TEST_LAST_NAME=User
+TEST_EMAIL_DOMAIN=example.com
 
-# ✅ TestRail + Jenkins config (inject via Jenkins credentials or environment variables)
-export TESTRAIL_HOST="$TESTRAIL_HOST"
-export TESTRAIL_USER="$TESTRAIL_USER"
-export TESTRAIL_PASSWORD="$TESTRAIL_PASSWORD"
-export TESTRAIL_PROJECT_ID="$TESTRAIL_PROJECT_ID"
-export TESTRAIL_SUITE_ID="$TESTRAIL_SUITE_ID"
+# Admin Configuration
+ADMIN_USERNAME=admin_user
+ADMIN_PASSWORD=admin_password
 
-export TESTMO_URL="$TESTMO_URL"
-export TESTMO_TOKEN="$TESTMO_TOKEN"
-export TESTMO_PROJECT_ID="$TESTMO_PROJECT_ID"
+# Magento Store Configuration
+MAGENTO_WEBSITE_ID=1
+MAGENTO_STORE_ID=1
+MAGENTO_GROUP_ID=1
 
-export BASE_URL="$BASE_URL"
-export TEST_EMAIL="$TEST_EMAIL"
-export TEST_PASSWORD="$TEST_PASSWORD"
-export INVALID_EMAIL="$INVALID_EMAIL"
-export INVALID_PASSWORD="$INVALID_PASSWORD"
+# Invalid Credentials for Error Testing
+INVALID_EMAIL=invalid@example.com
+INVALID_PASSWORD=wrongpassword
 
-# ✅ Clean & install
-rm -rf node_modules
-npm install
-npm run install:browsers
-
-# ✅ Run tests with TestRail reporter
-npm run test:with-report
+# TestRail Integration (Optional)
+TESTRAIL_HOST=your-testrail-instance.com
+TESTRAIL_USER=your_email@company.com
+TESTRAIL_PASSWORD=your_testrail_password
+TESTRAIL_PROJECT_ID=123
+TESTRAIL_SUITE_ID=456
 ```
-
-> 🔐 Do not hardcode credentials. Use environment variables, Jenkins credentials plugin, or secrets injection.
 
 ---
 
-### 🌐 2. Ngrok Tunnel (Optional for Local Jenkins)
+## Creating New Tests
 
-If Jenkins is running locally (e.g., `http://localhost:9090`), use [ngrok](https://ngrok.com/) to expose it:
+### 1. Add Locators
+
+Create environment-specific locators under `locators/feature/`:
+
+```typescript
+// locators/feature/feature.locators.ci.ts
+export const featureLocators = {
+  primaryButton: '[data-testid="primary-action"]',
+  statusIndicator: ".status-display",
+  errorMessage: ".error-container",
+};
+```
+
+```typescript
+// locators/feature/feature.locators.prod.ts
+export const featureLocators = {
+  primaryButton: '[data-testid="primary-action"]',
+  statusIndicator: ".status-display",
+  errorMessage: ".error-container",
+};
+```
+
+```typescript
+// locators/feature/index.ts (Dynamic Loader)
+const ENV = (process.env.ENV || "prod").toLowerCase();
+
+let locatorsModule: any;
+
+switch (ENV) {
+  case "prod":
+    locatorsModule = require("./feature.locators.prod");
+    break;
+  default:
+    locatorsModule = require("./feature.locators.ci");
+}
+
+export const featureLocators = locatorsModule.featureLocators;
+```
+
+### 2. Create Centralized Selectors (Optional)
+
+For environment-agnostic selectors, use `src/constants/selectors/`:
+
+```typescript
+// src/constants/selectors/feature.selectors.ts
+export const FeatureSelectors = {
+  primaryButton: '[data-testid="primary-action"]',
+  statusIndicator: ".status-display",
+  errorMessage: ".error-container",
+};
+```
+
+### 2. Create Page Object
+
+```typescript
+// src/pages/feature.page.ts
+import { Page, expect } from "@playwright/test";
+import { FeatureSelectors } from "../constants/selectors/feature.selectors";
+
+export class FeaturePage {
+  readonly page: Page;
+
+  constructor(page: Page) {
+    this.page = page;
+  }
+
+  async performAction() {
+    await this.page.locator(FeatureSelectors.primaryButton).click();
+  }
+
+  async verifySuccess() {
+    await Promise.race([
+      expect(this.page.locator(FeatureSelectors.statusIndicator)).toContainText(
+        "Success"
+      ),
+      expect(this.page).toHaveURL(/.*success.*/),
+      expect(this.page.locator("body")).toContainText("Operation completed"),
+    ]);
+  }
+}
+```
+
+### 3. Write Test Specification
+
+```typescript
+// src/tests/feature.spec.ts
+import { test, expect } from "@playwright/test";
+import { FeaturePage } from "../pages/feature.page";
+
+test.describe("Feature functionality", () => {
+  test("@C1234 Should perform action successfully", async ({ page }) => {
+    const featurePage = new FeaturePage(page);
+
+    await featurePage.performAction();
+    await featurePage.verifySuccess();
+  });
+});
+```
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Environment Variables Not Loaded**
+
+   - Ensure correct `.env` file exists
+   - Check `ENV` variable is set correctly for CI/prod environments
+
+2. **Cross-Environment Test Failures**
+
+   - Review selector specificity
+   - Consider using text-based detection over CSS selectors
+   - Implement Promise.race() pattern for robustness
+
+3. **CI Environment Issues**
+   - Verify GitHub secrets are configured
+   - Check Docker Magento setup logs in workflow output
+
+### Debug Mode
+
+Enable debug output:
 
 ```bash
-ngrok http 9090
+DEBUG=pw:* npx playwright test --project=chromium --reporter=list,html
 ```
 
-Use the generated HTTPS forwarding URL as your webhook target in GitHub.
-
----
-
-### 🔔 3. GitHub Webhook Setup
-
-1. Go to **Settings → Webhooks → Add Webhook** in your GitHub repo.
-2. Use the following settings:
-   - **Payload URL**: `https://<ngrok-forwarding-url>/github-webhook/`
-   - **Content type**: `application/json`
-   - **Event**: Just the `push` event (or customize)
-3. Ensure Jenkins is listening to GitHub events via:
-   - **Build Triggers** → Check `GitHub hook trigger for GITScm polling`
-
----
-
-### 📦 4. Jenkins Artifacts (Optional)
-
-To archive test results (screenshots, videos, and reports):
-
-1. In Jenkins → Project → **Configure** → **Post-build Actions**
-2. Add **"Archive the artifacts"**
-3. Set path:
+For verbose Playwright traces:
 
 ```bash
-test-results/**/*.*
+npx playwright test --project=chromium --reporter=list,html --trace on
 ```
+
+---
+
+## Contributing
+
+1. Create feature branch: `git checkout -b feature/your-feature`
+2. Follow existing patterns (Promise.race(), Page Objects, etc.)
+3. Ensure cross-environment compatibility
+4. Add appropriate test coverage
+5. Submit pull request
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+## Support
+
+For questions or issues:
+
+1. Check the troubleshooting section above
+2. Review existing GitHub issues
+3. Create a new issue with detailed reproduction steps

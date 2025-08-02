@@ -1,4 +1,4 @@
-export const LoginSelectors = {
+export const loginLocators = {
     loginLink: 'a[href*="customer/account/login"]',
     usernameField: '[name="login[username]"]',
     passwordField: '[name="login[password]"]',

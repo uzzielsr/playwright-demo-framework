@@ -10,7 +10,6 @@ reports/
 
 # Environment files
 .env
-.env.*
 .env.ci
 .env.prod
 .DS_Store
