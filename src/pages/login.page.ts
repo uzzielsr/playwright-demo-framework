@@ -33,6 +33,6 @@ export class LoginPage {
     }
 
     async isErrorDisplayed() {
-        await expect(this.page.locator(LoginSelectors.loginErrorMessage).first()).toBeVisible({ timeout: 10000 });
+        await expect(this.page.locator('body')).toContainText('The account sign-in was incorrect or your account is disabled temporarily. Please wait and try again later.', { timeout: 10000 });
     }
 }
