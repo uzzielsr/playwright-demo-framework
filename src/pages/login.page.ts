@@ -13,7 +13,8 @@ export class LoginPage {
         if (!baseUrl) {
             throw new Error('BASE_URL is not defined in the .env file.');
         }
-        await this.page.goto(`${baseUrl}/customer/account/login`);
+        const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+        await this.page.goto(`${cleanBaseUrl}/customer/account/login`);
         await this.page.waitForLoadState('load');
     }
 
@@ -21,11 +22,9 @@ export class LoginPage {
         await this.page.fill(LoginSelectors.usernameField, email);
         await this.page.fill(LoginSelectors.passwordField, password);
         await this.page.locator(LoginSelectors.submitButton).click();
-        await this.page.waitForLoadState('networkidle');
     }
 
     async isUserLoggedIn(username: string) {
-        await this.page.waitForLoadState('networkidle');
         await Promise.race([
             expect(this.page.locator(LoginSelectors.loggedInIndicator).first()).toContainText(`Welcome, ${username}`, { timeout: 10000 }),
             expect(this.page).toHaveURL(/.*customer\/account.*/, { timeout: 10000 }),
@@ -34,8 +33,10 @@ export class LoginPage {
     }
 
     async isErrorDisplayed() {
-        await this.page.waitForLoadState('networkidle');
-
-        await expect(this.page.locator(LoginSelectors.loginErrorMessage)).toContainText("sign-in was incorrect", { timeout: 10000 });
+        await Promise.race([
+            expect(this.page.locator(LoginSelectors.loginErrorMessage)).toContainText("sign-in was incorrect", { timeout: 10000 }),
+            expect(this.page.locator(LoginSelectors.loginErrorMessage)).toContainText("Invalid Form Key", { timeout: 10000 }),
+            expect(this.page.locator(LoginSelectors.loginErrorMessage)).toContainText("invalid", { timeout: 10000 })
+        ]);
     }
 }

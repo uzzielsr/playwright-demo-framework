@@ -10,5 +10,7 @@ reports/
 
 # Environment files
 .env
-.env.*
+.env.local
+.env.development
+.env.staging
 .DS_Store
