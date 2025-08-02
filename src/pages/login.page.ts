@@ -14,8 +14,9 @@ export class LoginPage {
             throw new Error('❌ BASE_URL is not defined in the .env file.');
         }
 
-        await this.page.goto(baseUrl);
-        await this.page.click(LoginSelectors.loginLink);
+        await this.page.goto(baseUrl, { waitUntil: 'load', timeout: 90000 });
+        await this.page.waitForLoadState('networkidle', { timeout: 30000 });
+        await this.page.click(LoginSelectors.loginLink, { timeout: 15000 });
     }
 
     async login(email: string, password: string) {
@@ -26,9 +27,9 @@ export class LoginPage {
 
     async isUserLoggedIn(): Promise<boolean> {
         try {
-            await this.page.waitForLoadState('load');
-            await this.page.waitForSelector(LoginSelectors.homeTitle, { timeout: 5000 });
-            await this.page.waitForSelector(LoginSelectors.loggedInIndicator, { timeout: 5000 });
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await this.page.waitForSelector(LoginSelectors.homeTitle, { timeout: 15000 });
+            await this.page.waitForSelector(LoginSelectors.loggedInIndicator, { timeout: 15000 });
             return true;
         } catch {
             return false;
@@ -37,8 +38,8 @@ export class LoginPage {
 
     async isErrorDisplayed(): Promise<boolean> {
         try {
-            await this.page.waitForLoadState('load');
-            await this.page.waitForSelector(LoginSelectors.errorMessage, { timeout: 5000 });
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await this.page.waitForSelector(LoginSelectors.errorMessage, { timeout: 15000 });
             return true;
         } catch {
             return false;

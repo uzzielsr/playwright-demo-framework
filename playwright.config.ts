@@ -13,7 +13,7 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
  */
 export default defineConfig({
   testDir: './src/tests',
-  timeout: 30000,
+  timeout: process.env.CI ? 120000 : 30000, // 2 minutes in CI, 30 seconds locally
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -42,6 +42,8 @@ export default defineConfig({
     video: 'on',
     /* Ignore SSL certificate errors in CI environments */
     ignoreHTTPSErrors: !!process.env.CI,
+    /* Increase navigation timeout in CI */
+    navigationTimeout: process.env.CI ? 90000 : 30000, // 90 seconds in CI
   },
 
   /* Configure projects for major browsers */
