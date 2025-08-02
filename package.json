@@ -11,6 +11,9 @@
     "test:prod": "ENV=prod playwright test",
     "test:ci:headed": "ENV=ci playwright test --headed",
     "test:prod:headed": "ENV=prod playwright test --headed",
+    "debug": "playwright test --debug",
+    "debug:ci": "ENV=ci playwright test --debug",
+    "debug:prod": "ENV=prod playwright test --debug",
     "install:browsers": "npx playwright install chromium --with-deps"
   },
   "devDependencies": {
