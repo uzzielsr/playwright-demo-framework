@@ -263,6 +263,35 @@ TESTRAIL_SUITE_ID=456
 
 ---
 
+## Alternative CI/CD with CircleCI (Work in Progress)
+
+### CircleCI Configuration
+
+The project includes experimental CircleCI support via `.circleci/config.yml`:
+
+**Current Status**: 🚧 In Development
+
+- Basic Docker setup configured
+- Magento installation pipeline defined
+- Test execution framework ready
+- **Known Issues**: Environment variable handling and artifact management need optimization
+
+**Features Available**:
+
+- Docker-based Magento 2.4.8 setup
+- Playwright test execution
+- Basic artifact collection
+
+**To Use CircleCI** (when fully functional):
+
+1. Connect repository to CircleCI
+2. Configure environment variables in CircleCI dashboard
+3. Enable workflows for automated testing
+
+> **Note**: GitHub Actions is the primary CI/CD solution. CircleCI support is experimental and under active development.
+
+---
+
 ## Creating New Tests
 
 ### 1. Add Locators
@@ -309,7 +338,7 @@ export const featureLocators = locatorsModule.featureLocators;
 ```typescript
 // src/pages/feature.page.ts
 import { Page, expect } from "@playwright/test";
-import { FeatureSelectors } from "../constants/selectors/feature.selectors";
+import { featureLocators } from "../../locators/feature";
 
 export class FeaturePage {
   readonly page: Page;
@@ -319,12 +348,12 @@ export class FeaturePage {
   }
 
   async performAction() {
-    await this.page.locator(FeatureSelectors.primaryButton).click();
+    await this.page.locator(featureLocators.primaryButton).click();
   }
 
   async verifySuccess() {
     await Promise.race([
-      expect(this.page.locator(FeatureSelectors.statusIndicator)).toContainText(
+      expect(this.page.locator(featureLocators.statusIndicator)).toContainText(
         "Success"
       ),
       expect(this.page).toHaveURL(/.*success.*/),
