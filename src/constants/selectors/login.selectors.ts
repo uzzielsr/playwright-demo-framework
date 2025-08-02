@@ -4,6 +4,6 @@ export const LoginSelectors = {
     passwordField: '[name="login[password]"]',
     submitButton: 'button#send2',
     homeTitle: 'h1.page-title span.base:has-text("Home Page")',
-    loggedInIndicator: 'span.logged-in',
-    errorMessage: 'div.message-error div:has-text("The account sign-in was incorrect or your account is disabled temporarily.")',
+    loggedInIndicator: '.header span.logged-in:has-text("Welcome,")',
+    loginErrorMessage: 'div.message-error div:has-text("The account sign-in was incorrect or your account is disabled temporarily.")',
 };

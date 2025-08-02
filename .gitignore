@@ -1,4 +1,3 @@
-
 # Playwright
 node_modules/
 test-results/
@@ -8,5 +7,8 @@ playwright/.cache/
 screenshots/
 traces/
 reports/
+
+# Environment files
 .env
+.env.*
 .DS_Store

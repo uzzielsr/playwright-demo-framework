@@ -7,6 +7,10 @@
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report",
+    "test:ci": "ENV=ci playwright test",
+    "test:prod": "ENV=prod playwright test",
+    "test:ci:headed": "ENV=ci playwright test --headed",
+    "test:prod:headed": "ENV=prod playwright test --headed",
     "install:browsers": "npx playwright install chromium --with-deps"
   },
   "devDependencies": {

@@ -23,27 +23,17 @@ test.describe('Login functionality', () => {
   });
 
   test.afterEach(async () => {
-    if (createdUser?.id) {
-      try {
-        await userApi.deleteUser(createdUser.id);
-      } catch (error) {
-        // Silent cleanup failure
-      }
-    }
+    await userApi.deleteUser(createdUser?.id);
   });
 
   test('@C2333 Successful login with API-created user', async ({ page }) => {
     await loginPage.login(user.email, user.password);
-
-    const isLoggedIn = await loginPage.isUserLoggedIn();
-    expect(isLoggedIn).toBeTruthy();
+    await loginPage.isUserLoggedIn(`${user.firstname} ${user.lastname}`);
   });
 
   test('@C2334 Login with invalid password', async ({ page }) => {
-    await loginPage.login(user.email, 'WrongPassword123!');
-
-    const isVisible = await loginPage.isErrorDisplayed();
-    expect(isVisible).toBeTruthy();
+    await loginPage.login(user.email, user.invalidPassword);
+    await loginPage.isErrorDisplayed();
   });
 
 });
