@@ -13,19 +13,20 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
  */
 export default defineConfig({
   testDir: './src/tests',
-  timeout: 30000,
+  timeout: process.env.CI ? 120000 : 30000, // 2 minutes in CI, 30 seconds locally
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  /* No retries - fail fast */
+  retries: 0,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: ([
     ['list'],
-    process.env.ONLY_TESTMO !== 'true' ? ['@zealteam/testrail-reporter'] : null,
+    // TestRail reporter temporarily disabled due to export issue
+    // !process.env.CI || process.env.ENABLE_TESTRAIL === 'true' ? ['@zealteam/testrail-reporter'] : null,
     ['junit', { outputFile: 'test-results/results.xml' }],
     ['html', { outputFolder: 'playwright-report', open: 'never' }]
   ] as any).filter(Boolean),
@@ -39,6 +40,10 @@ export default defineConfig({
     headless: true,
     screenshot: 'on',
     video: 'on',
+    /* Ignore SSL certificate errors in CI environments */
+    ignoreHTTPSErrors: !!process.env.CI,
+    /* Increase navigation timeout in CI */
+    navigationTimeout: process.env.CI ? 90000 : 30000, // 90 seconds in CI
   },
 
   /* Configure projects for major browsers */

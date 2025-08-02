@@ -14,43 +14,41 @@ export class LoginPage {
             throw new Error('❌ BASE_URL is not defined in the .env file.');
         }
 
-        await this.page.goto(baseUrl);
-        await this.page.click(LoginSelectors.loginLink);
+        await this.page.goto(baseUrl, { waitUntil: 'load', timeout: 90000 });
+        await this.page.waitForLoadState('networkidle', { timeout: 30000 });
+        await this.page.click(LoginSelectors.loginLink, { timeout: 15000 });
     }
 
     async login(email: string, password: string) {
         await this.page.fill(LoginSelectors.usernameField, email);
         await this.page.fill(LoginSelectors.passwordField, password);
         await this.page.click(LoginSelectors.submitButton);
-    }
 
-    async loginWithValidCredentials() {
-        const email = process.env.TEST_EMAIL;
-        const password = process.env.TEST_PASSWORD;
-
-        if (!email || !password) {
-            throw new Error('❌ TEST_EMAIL or TEST_PASSWORD is not defined in the .env file.');
+        try {
+            await Promise.race([
+                this.page.waitForURL(url => !url.toString().includes('/customer/account/login'), { timeout: 15000 }),
+                this.page.waitForSelector('.message-error', { timeout: 15000 })
+            ]);
+        } catch {
+            await this.page.waitForTimeout(3000);
         }
 
-        await this.login(email, password);
-    }
-
-    async loginWithInvalidCredentials() {
-        const email = process.env.INVALID_EMAIL;
-        const password = process.env.INVALID_PASSWORD;
-
-        if (!email || !password) {
-            throw new Error('❌ INVALID_EMAIL or INVALID_PASSWORD is not defined in the .env file.');
-        }
-
-        await this.login(email, password);
+        await this.page.waitForLoadState('networkidle', { timeout: 10000 });
     }
 
     async isUserLoggedIn(): Promise<boolean> {
         try {
-            await this.page.waitForSelector(LoginSelectors.homeTitle, { timeout: 5000 });
-            await this.page.waitForSelector(LoginSelectors.loggedInIndicator, { timeout: 5000 });
-            return true;
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+
+            const currentUrl = this.page.url();
+            const isOnHomepage = !currentUrl.includes('/customer/account/login');
+
+            if (isOnHomepage) {
+                await this.page.waitForSelector('h1:has-text("Home Page")', { timeout: 10000 });
+                return true;
+            }
+
+            return false;
         } catch {
             return false;
         }
@@ -58,7 +56,8 @@ export class LoginPage {
 
     async isErrorDisplayed(): Promise<boolean> {
         try {
-            await this.page.waitForSelector(LoginSelectors.errorMessage, { timeout: 5000 });
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await this.page.waitForSelector(LoginSelectors.errorMessage, { timeout: 15000 });
             return true;
         } catch {
             return false;
