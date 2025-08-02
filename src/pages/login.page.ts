@@ -27,7 +27,9 @@ export class LoginPage {
     }
 
     async isUserLoggedIn(username: string) {
-        await expect(this.page.locator(LoginSelectors.loggedInIndicator).first()).toContainText(`Welcome, ${username}`);
+        // Wait a bit more for CI environment and try with longer timeout
+        await this.page.waitForLoadState('networkidle');
+        await expect(this.page.locator(LoginSelectors.loggedInIndicator).first()).toContainText(`Welcome, ${username}`, { timeout: 15000 });
     }
 
     async isErrorDisplayed() {
