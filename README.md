@@ -54,9 +54,6 @@ playwright-demo-framework/
 │       └── login.locators.prod.ts # Production environment specific locators
 │
 ├── src/
-│   ├── constants/
-│   │   └── selectors/
-│   │       └── login.selectors.ts  # Centralized, environment-agnostic selectors
 │   ├── pages/
 │   │   └── login.page.ts           # Robust Page Object with Promise.race() patterns
 │   └── tests/
@@ -305,19 +302,6 @@ switch (ENV) {
 }
 
 export const featureLocators = locatorsModule.featureLocators;
-```
-
-### 2. Create Centralized Selectors (Optional)
-
-For environment-agnostic selectors, use `src/constants/selectors/`:
-
-```typescript
-// src/constants/selectors/feature.selectors.ts
-export const FeatureSelectors = {
-  primaryButton: '[data-testid="primary-action"]',
-  statusIndicator: ".status-display",
-  errorMessage: ".error-container",
-};
 ```
 
 ### 2. Create Page Object
