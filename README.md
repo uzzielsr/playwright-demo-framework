@@ -7,10 +7,10 @@ Enterprise-grade end-to-end automation framework for Magento 2.4.8 using Playwri
 ## Tech Stack
 
 - **Playwright 1.53.1** - Modern browser automation
-- **TypeScript** - Type-safe development
-- **Page Object Model (POM)** - Maintainable test architecture
+- **TypeScript** - Type-safe development with explicit Locator typing
+- **Hybrid Page Object Model** - Pre-initialized locators with Promise.race() patterns
 - **Multi-Environment Support** - Local, CI, and production configurations
-- **Promise.race() Pattern** - Robust cross-environment verification
+- **Promise.race() Pattern** - Robust cross-environment verification strategies
 - **Docker Magento 2.4.8** - Containerized test environment
 - **Automatic screenshots and videos** - Complete test artifacts
 - **TestRail integration** - Test management integration
@@ -176,36 +176,80 @@ Configure for production testing with appropriate URLs and credentials.
 
 ## Robust Testing Architecture
 
-### Page Object Model with Promise.race()
+### Hybrid Page Object Model with Promise.race()
 
-Our Page Objects use a robust `Promise.race()` pattern for maximum reliability:
+Our Page Objects use a **hybrid approach** combining pre-initialized locators with robust `Promise.race()` patterns for maximum reliability and performance:
 
 ```typescript
-async isUserLoggedIn(username: string) {
-    await Promise.race([
-        expect(this.page.locator(LoginSelectors.loggedInIndicator).first()).toContainText(`Welcome, ${username}`, { timeout: 10000 }),
-        expect(this.page).toHaveURL(/.*customer\/account.*/, { timeout: 10000 }),
-        expect(this.page.locator('body')).toContainText(`Welcome, ${username}`, { timeout: 10000 })
-    ]);
-}
+// Enhanced Page Object with Pre-initialized Locators
+import { Page, Locator, expect } from "@playwright/test";
+import { loginLocators } from "../../locators/login/index";
 
-async isErrorDisplayed() {
+export class LoginPage {
+  private readonly page: Page;
+  private readonly usernameField: Locator;
+  private readonly passwordField: Locator;
+  private readonly submitButton: Locator;
+  private readonly loggedInIndicator: Locator;
+
+  constructor(page: Page) {
+    this.page = page;
+    this.usernameField = page.locator(loginLocators.usernameField);
+    this.passwordField = page.locator(loginLocators.passwordField);
+    this.submitButton = page.locator(loginLocators.submitButton);
+    this.loggedInIndicator = page.locator(loginLocators.loggedInIndicator);
+  }
+
+  async login(email: string, password: string) {
+    await this.usernameField.fill(email);
+    await this.passwordField.fill(password);
+    await this.submitButton.click();
+  }
+
+  // Robust verification with multiple fallback strategies
+  async isUserLoggedIn(username: string) {
     await Promise.race([
-        expect(this.page).toHaveURL(/.*customer\/account\/login.*/, { timeout: 10000 }),
-        expect(this.page.locator(LoginSelectors.usernameField)).toBeVisible({ timeout: 10000 }),
-        expect(this.page.locator(LoginSelectors.passwordField)).toBeVisible({ timeout: 10000 }),
-        expect(this.page.locator('body')).toContainText('The account sign-in was incorrect', { timeout: 10000 }),
-        expect(this.page.locator('body')).toContainText('Invalid Form Key', { timeout: 10000 })
+      expect(this.loggedInIndicator.first()).toContainText(
+        `Welcome, ${username}`,
+        { timeout: 10000 }
+      ),
+      expect(this.page).toHaveURL(/.*customer\/account.*/, { timeout: 10000 }),
+      expect(this.page.locator("body")).toContainText(`Welcome, ${username}`, {
+        timeout: 10000,
+      }),
     ]);
+  }
+
+  async isErrorDisplayed() {
+    await Promise.race([
+      expect(this.page).toHaveURL(/.*customer\/account\/login.*/, {
+        timeout: 10000,
+      }),
+      expect(this.usernameField).toBeVisible({ timeout: 10000 }),
+      expect(this.passwordField).toBeVisible({ timeout: 10000 }),
+      expect(this.page.locator("body")).toContainText(
+        "The account sign-in was incorrect",
+        { timeout: 10000 }
+      ),
+      expect(this.page.locator("body")).toContainText("Invalid Form Key", {
+        timeout: 10000,
+      }),
+    ]);
+  }
 }
 ```
 
-This approach provides:
+### Architecture Benefits
 
-- **Multiple verification strategies** per action
-- **Cross-environment compatibility**
-- **Fallback mechanisms** for different Magento configurations
-- **Fast execution** (first successful verification wins)
+This hybrid approach provides:
+
+- **🚀 Performance**: Pre-initialized locators for faster execution
+- **🛡️ Multiple verification strategies** per action
+- **🌍 Cross-environment compatibility** through Promise.race() patterns
+- **🔧 Type Safety**: Explicit Locator typing with TypeScript
+- **⚡ Fallback mechanisms** for different Magento configurations
+- **🎯 Clean API**: Direct locator usage in methods
+- **🏃 Fast execution** (first successful verification wins)
 
 ---
 
@@ -340,25 +384,27 @@ export const featureLocators = locatorsModule.featureLocators;
 
 ```typescript
 // src/pages/feature.page.ts
-import { Page, expect } from "@playwright/test";
+import { Page, Locator, expect } from "@playwright/test";
 import { featureLocators } from "../../locators/feature";
 
 export class FeaturePage {
-  readonly page: Page;
+  private readonly page: Page;
+  private readonly primaryButton: Locator;
+  private readonly statusIndicator: Locator;
 
   constructor(page: Page) {
     this.page = page;
+    this.primaryButton = page.locator(featureLocators.primaryButton);
+    this.statusIndicator = page.locator(featureLocators.statusIndicator);
   }
 
   async performAction() {
-    await this.page.locator(featureLocators.primaryButton).click();
+    await this.primaryButton.click();
   }
 
   async verifySuccess() {
     await Promise.race([
-      expect(this.page.locator(featureLocators.statusIndicator)).toContainText(
-        "Success"
-      ),
+      expect(this.statusIndicator).toContainText("Success"),
       expect(this.page).toHaveURL(/.*success.*/),
       expect(this.page.locator("body")).toContainText("Operation completed"),
     ]);
